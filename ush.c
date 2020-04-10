@@ -48,8 +48,8 @@ main (void)
 	/* Run it ... */
 	//processline (buffer);
 	
-	int *ptr;
-	arg_parse(buffer, ptr);
+	int ptr;
+	arg_parse(buffer, &ptr);
 
     }
 
@@ -64,6 +64,8 @@ void processline (char *line)
 {
     pid_t  cpid;
     int    status;
+
+    
     
     /* Start a new process to do the job. */
     cpid = fork();
@@ -118,14 +120,11 @@ char ** arg_parse (char *line, int *argcptr)
     }
   }
 
-  printf("%d args\n", argc);
-  int mem = ((argc * sizeof(int)) + sizeof(char));
-  printf("argcptr size %d\n", mem);
-  
+  printf("%d args\n", argc);  
   // Allocate memory
-  argcptr = (int*) malloc(mem);
-
-  
+  int mem = ((argc + 1) + sizeof(char*));
+  char** argarr = (char**) malloc(mem);
+  printf("hello");
   i = 0;
   int ac = 0;
   // Assign pointers and 0s
@@ -134,20 +133,31 @@ char ** arg_parse (char *line, int *argcptr)
     while(line[i] == ' ') i++;
     // start arg
     if (line[i] != ' ' && line[i] != 0) {
-	argcptr[ac++] = i++;
+      // assign pointer
+      argarr[ac++] = line[i++];
       // find end of arg
       while (line[i] != ' ') {
 	if (line[i] == 0) break;
 	i++;
-      } line[i] = '0'; i++;
+      } line[i++] = '0'; // place 0 at end of arg
     }
-  } argcptr[ac] = NULL;
+  }
+  // set final pointer to NULL
+  argarr[ac] = NULL;
   
   int b = 0;
-  while (argcptr[b] != NULL || b == 0) {
-    printf("argcptr[%d] = %d\n", b, argcptr[b]);
+  while (argarr[b] != NULL || b == 0) {
+    printf("argarr[%d] = %c\n", b, *argarr[b]);
     b++;
   }
+  /*
+  printf("argarr[0]=");
+  for(int a = 0; a < strlen(argarr[0]); a++) {
+    printf("%c",argarr[0][a]);
+  }
+  */
+  argcptr = &argc;
+  printf("argcptr=%d\n", *argcptr);
   
   printf("hello\n");
   
@@ -156,7 +166,7 @@ char ** arg_parse (char *line, int *argcptr)
   }
   printf("\nbye\n");
  	
-  return NULL;
+  return argarr;
 }
 
 
