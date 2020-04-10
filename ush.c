@@ -102,20 +102,6 @@ char ** arg_parse (char *line, int *argcptr)
   
   // Count args
   while (line[i] != 0) {
-<<<<<<< HEAD
-    printf("i:%d", i);
-    printf(", char:%c\n",line[i]);
-    // skip spaces
-    while(line[i] == ' ') i++;
-    // start arg
-    if (line[i] != ' ') {
-      argc++;
-      i++;
-      // find end of arg
-      while (line[i] != ' ') {
-	//printf("i:%d", i);
-	//printf(", char:%c\n",line[i]);
-=======
     //printf("count = %d, i:%d, char:%c\n", argc, i, line[i]);
     // skip spaces
     while(line[i] == ' ') i++;
@@ -127,61 +113,38 @@ char ** arg_parse (char *line, int *argcptr)
       while (line[i] != ' ') {
 	if (line[i] == 0) break;
 	//printf("i:%d, char:%c\n", argc, i, line[i]);
->>>>>>> f1abf38a6e5e104c69ea260a841b922bddbfcb86
 	i++;
       }
     }
   }
 
-  // Allocate memory
-  //argcptr = (int*)malloc((argc * sizeof(int)) + sizeof(char));
-  //*argcptr = (int*)malloc((argc * sizeof(int)) + sizeof(char));
-
   printf("%d args\n", argc);
-<<<<<<< HEAD
-
-  // Assign pointers and 0s
-  //i = 0;
-  /*
-  while (line[ptr] != 0) {
-    
-  }
-  */
-
-  
-=======
   int mem = ((argc * sizeof(int)) + sizeof(char));
   printf("argcptr size %d\n", mem);
   
   // Allocate memory
   argcptr = (int*) malloc(mem);
->>>>>>> f1abf38a6e5e104c69ea260a841b922bddbfcb86
 
   
   i = 0;
   int ac = 0;
   // Assign pointers and 0s
   while (line[i] != 0) {
-    printf("i:%d, char:%c\n", i, line[i]);
     // skip spaces
     while(line[i] == ' ') i++;
     // start arg
     if (line[i] != ' ' && line[i] != 0) {
-	argcptr[ac] = i;
-	printf("argcptr[%d] = %d\n", ac, argcptr[ac]);
-	ac++;
-	i++;
+	argcptr[ac++] = i++;
       // find end of arg
       while (line[i] != ' ') {
 	if (line[i] == 0) break;
-	//printf("i:%d, char:%c\n", argc, i, line[i]);
 	i++;
       } line[i] = '0'; i++;
     }
   } argcptr[ac] = NULL;
   
   int b = 0;
-  while (argcptr[b] != NULL) {
+  while (argcptr[b] != NULL || b == 0) {
     printf("argcptr[%d] = %d\n", b, argcptr[b]);
     b++;
   }
@@ -192,6 +155,7 @@ char ** arg_parse (char *line, int *argcptr)
     printf("%c", line[a]);
   }
   printf("\nbye\n");
+ 	
   return NULL;
 }
 
