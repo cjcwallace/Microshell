@@ -119,7 +119,6 @@ char ** arg_parse (char *line, int *argcptr)
   }
 
   printf("%d args\n", argc);
-  printf("int size %d\nchar size %d\n",sizeof(int), sizeof(char));
   int mem = ((argc * sizeof(int)) + sizeof(char));
   printf("argcptr size %d\n", mem);
   
@@ -131,12 +130,13 @@ char ** arg_parse (char *line, int *argcptr)
   int ac = 0;
   // Assign pointers and 0s
   while (line[i] != 0) {
-    //printf("count = %d, i:%d, char:%c\n", argc, i, line[i]);
+    printf("i:%d, char:%c\n", i, line[i]);
     // skip spaces
     while(line[i] == ' ') i++;
     // start arg
     if (line[i] != ' ' && line[i] != 0) {
 	argcptr[ac] = i;
+	printf("argcptr[%d] = %d\n", ac, argcptr[ac]);
 	ac++;
 	i++;
       // find end of arg
@@ -144,7 +144,7 @@ char ** arg_parse (char *line, int *argcptr)
 	if (line[i] == 0) break;
 	//printf("i:%d, char:%c\n", argc, i, line[i]);
 	i++;
-      } //line[i] = 0;
+      } line[i] = '0'; i++;
     }
   } argcptr[ac] = NULL;
   
@@ -154,10 +154,12 @@ char ** arg_parse (char *line, int *argcptr)
     b++;
   }
   
-//  for (int a = 0; a < strlen(line); a++) {
- //   printf("%c", line[a]);
- // }
-
+  printf("hello\n");
+  
+  for (int a = 0; a < strlen(line); a++) {
+    printf("%c", line[a]);
+  }
+  printf("\nbye\n");
   return NULL;
 }
 
