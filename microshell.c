@@ -99,24 +99,42 @@ char ** arg_parse (char *line, int *argcptr)
   /* call malloc(3) only once */
 
   int argc = 0;
-  int ptr = 0;
-  while (line[ptr] != '\0') {
-    if (line[ptr] == ' ') ptr++;
-    if (line[ptr] != ' ') {
-      argcptr[argc] = ptr; 
+  int i = 0;
+  
+  // Count args
+  while (line[i] != 0) {
+    printf("i:%d", i);
+    printf(", char:%c\n",line[i]);
+    // skip spaces
+    while(line[i] == ' ') i++;
+    // start arg
+    if (line[i] != ' ') {
       argc++;
-      while(line[ptr] != ' ') ptr ++;
+      i++;
+      // find end of arg
+      while (line[i] != ' ') {
+	//printf("i:%d", i);
+	//printf(", char:%c\n",line[i]);
+	i++;
+      }
     }
-    ptr++;
   }
+
+  // Allocate memory
+  //argcptr = (int*)malloc((argc * sizeof(int)) + sizeof(char));
+  //*argcptr = (int*)malloc((argc * sizeof(int)) + sizeof(char));
 
   printf("%d args\n", argc);
-  for (int i = 0; i < sizeof(argcptr); i++) {
-    printf("i:%d = %d\n", i, argcptr[i]);
-  }
-  
 
-  //argcptr = (int*)malloc((argc * sizeof(int)) + 1);
+  // Assign pointers and 0s
+  //i = 0;
+  /*
+  while (line[ptr] != 0) {
+    
+  }
+  */
+
+  
 
   
 
