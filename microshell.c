@@ -47,9 +47,8 @@ main (void)
 
 	/* Run it ... */
 	//processline (buffer);
-
-	int i = 1;
-	int *ptr = &i;
+	
+	int *ptr;
 	arg_parse(buffer, ptr);
 
     }
@@ -103,41 +102,88 @@ char ** arg_parse (char *line, int *argcptr)
   
   // Count args
   while (line[i] != 0) {
-    printf("i:%d", i);
-    printf(", char:%c\n",line[i]);
+    //printf("count = %d, i:%d, char:%c\n", argc, i, line[i]);
     // skip spaces
     while(line[i] == ' ') i++;
     // start arg
-    if (line[i] != ' ') {
-      argc++;
-      i++;
+    if (line[i] != ' ' && line[i] != 0) {
+	argc++;
+	i++;
       // find end of arg
       while (line[i] != ' ') {
-	//printf("i:%d", i);
-	//printf(", char:%c\n",line[i]);
+	if (line[i] == 0) break;
+	//printf("i:%d, char:%c\n", argc, i, line[i]);
 	i++;
       }
     }
   }
 
-  // Allocate memory
-  //argcptr = (int*)malloc((argc * sizeof(int)) + sizeof(char));
-  //*argcptr = (int*)malloc((argc * sizeof(int)) + sizeof(char));
-
   printf("%d args\n", argc);
+  printf("int size %d\nchar size %d\n",sizeof(int), sizeof(char));
+  int mem = ((argc * sizeof(int)) + sizeof(char));
+  printf("argcptr size %d\n", mem);
+  
+  // Allocate memory
+  argcptr = (int*) malloc(mem);
 
+  
+  i = 0;
+  int ac = 0;
   // Assign pointers and 0s
-  //i = 0;
-  /*
-  while (line[ptr] != 0) {
-    
+  while (line[i] != 0) {
+    //printf("count = %d, i:%d, char:%c\n", argc, i, line[i]);
+    // skip spaces
+    while(line[i] == ' ') i++;
+    // start arg
+    if (line[i] != ' ' && line[i] != 0) {
+	argcptr[ac] = i;
+	ac++;
+	i++;
+      // find end of arg
+      while (line[i] != ' ') {
+	if (line[i] == 0) break;
+	//printf("i:%d, char:%c\n", argc, i, line[i]);
+	i++;
+      } //line[i] = 0;
+    }
+  } argcptr[ac] = NULL;
+  
+  int b = 0;
+  while (argcptr[b] != NULL) {
+    printf("argcptr[%d] = %d\n", b, argcptr[b]);
+    b++;
   }
-  */
-
   
-
-  
+//  for (int a = 0; a < strlen(line); a++) {
+ //   printf("%c", line[a]);
+ // }
 
   return NULL;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
