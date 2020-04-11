@@ -68,7 +68,7 @@ void processline (char *line)
     int argc;
     char **args = arg_parse(line, &argc);
     free(args);
-    if (argc == 0) return;
+    //if (argc == 0) return;
     
     /* Start a new process to do the job. */
     cpid = fork();
@@ -145,7 +145,7 @@ char ** arg_parse (char *line, int *argcptr)
       while (line[i] != ' ') {
 	if (line[i] == 0) break;
 	i++;
-      } line[i++] = '\0';
+      } line[i++] = 0;
     }
   } argarr[ac] = NULL;
 
