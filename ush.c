@@ -46,10 +46,10 @@ main (void)
 	    buffer[len-1] = 0;
 
 	/* Run it ... */
-	//processline (buffer);
+	processline (buffer);
 	
-	int *ptr;
-	arg_parse(buffer, ptr);
+	//int *ptr;
+	//arg_parse(buffer, ptr);
 
     }
 
@@ -64,6 +64,12 @@ void processline (char *line)
 {
     pid_t  cpid;
     int    status;
+
+    int argc;
+    char **args = arg_parse(line, &argc);
+    printf("args: %d\n", argc);
+
+    if (argc == 0) return;
     
     /* Start a new process to do the job. */
     cpid = fork();
@@ -76,7 +82,8 @@ void processline (char *line)
     /* Check for who we are! */
     if (cpid == 0) {
       /* We are the child! */
-      execlp (line, line, (char *)0);
+      //execlp (line, line, (char *)0);
+      execve (args[0], &args[1], (char*)0);
       /* execlp reurned, wasn't successful */
       perror ("exec");
       fclose(stdin);  // avoid a linux stdio bug
@@ -119,7 +126,7 @@ char ** arg_parse (char *line, int *argcptr)
   }
   if (argc == 0) return NULL;
 
-  printf("%d args\n", argc);
+  //printf("%d args\n", argc);
   
   // Allocate memory
   char** argarr = (char**) malloc((argc + 1) + sizeof(char*));
@@ -140,13 +147,16 @@ char ** arg_parse (char *line, int *argcptr)
       } line[i++] = '0';
     }
   } argarr[ac] = NULL;
-  
+
+  /* // Debug: print line[:] from given pointers
   int b = 0;
   while (argarr[b] != NULL || b == 0) {
     printf("argarr[%d] = %s\n", b, argarr[b]);
     b++;
   }
   printf("zing\n");
+  */
+  /* // Debug: print args in order
   int x = 0;
   for (int z = 0; z < argc; z++) { 
     printf("\narg: %d = ", z);
@@ -154,16 +164,15 @@ char ** arg_parse (char *line, int *argcptr)
       printf("%c", argarr[z][x++]);
     }x=0;
   }
+  */
+  /* // Debug: print modified line
   printf("\nhello\n");
-  
   for (int a = 0; a < strlen(line); a++) {
     printf("%c", line[a]);
   }
   printf("\nbye\n");
-
-  
-
-  argcptr = &argc;
+  */
+  *argcptr = argc;
   return argarr;
 }
 

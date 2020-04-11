@@ -1,0 +1,70 @@
+Script started on Fri Apr 10 20:35:06 2020
+
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+[?1034h[Cameron]@20:35:06 $ codesign -fs gdb-cert /usr/local/bin/gdb[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cd[K ..gdb a.outwhich -a gdb[4Pinfo[C[C[C[Cgdb a.outp[C[C[C[C[C[Ccc -g -Wall ush.c
+[1mush.c:86:34: [0m[0;1;35mwarning: [0m[1mincompatible pointer types passing 'char *' to parameter of type
+      'char *const *' [-Wincompatible-pointer-types][0m
+      execve (args[0], &args[1], (char*)0);
+[0;1;32m                                 ^~~~~~~~
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/unistd.h:445:72: [0m[0;1;30mnote: [0mpassing
+      argument to parameter '__envp' here[0m
+int      execve(const char * __file, char * const * __argv, char * const * __envp) __WATCH...
+[0;1;32m                                                                           ^
+[0m1 warning generated.
+[Cameron]@20:35:13 $ gcc -g -Wall ush.ccodesign -fs gdb-cert /usr/local/bin/gdb[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cd[K ..gdb a.out
+[?1034hGNU gdb (GDB) 8.2.50.20181202-git
+Copyright (C) 2018 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-apple-darwin19.3.0".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from a.out...
+Reading symbols from /Users/Cameron/Documents/Computer_Science_Major/347/csci347_s20/a.out.dSYM/Contents/Resources/DWARF/a.out...
+(gdb) quit
+[Cameron]@20:35:19 $ end
+bash: end: command not found
+[Cameron]@20:35:20 $ quit
+bash: quit: command not found
+[Cameron]@20:35:22 $ 
+[Cameron]@20:35:30 $ exit
+exit
+
+Script done on Fri Apr 10 20:35:41 2020
+Script started on Fri Apr 10 20:35:44 2020
+
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+[?1034h[Cameron]@20:35:44 $ exitquit[1Pendgdb a.outcc -g -Wall ush.c
+[1mush.c:86:34: [0m[0;1;35mwarning: [0m[1mincompatible pointer types passing 'char *' to parameter of type
+      'char *const *' [-Wincompatible-pointer-types][0m
+      execve (args[0], &args[1], (char*)0);
+[0;1;32m                                 ^~~~~~~~
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/unistd.h:445:72: [0m[0;1;30mnote: [0mpassing
+      argument to parameter '__envp' here[0m
+int      execve(const char * __file, char * const * __argv, char * const * __envp) __WATCH...
+[0;1;32m                                                                           ^
+[0m1 warning generated.
+[Cameron]@20:35:50 $ ./a,[K.out
+% echo hello world
+args: 3
+exec: No such file or directory
+% echo      helo world
+args: 3
+exec: No such file or directory
+% ^C
+[Cameron]@20:36:10 $ exit
+exit
+
+Script done on Fri Apr 10 20:36:12 2020
