@@ -67,14 +67,14 @@ void processline (char *line)
 
     int argc;
     char **args = arg_parse(line, &argc);
-    printf("args: %d\n", argc);
-
+    free(args);
     if (argc == 0) return;
     
     /* Start a new process to do the job. */
     cpid = fork();
     if (cpid < 0) {
       /* Fork wasn't successful */
+      free(args);
       perror ("fork");
       return;
     }
@@ -83,7 +83,7 @@ void processline (char *line)
     if (cpid == 0) {
       /* We are the child! */
       //execlp (line, line, (char *)0);
-      execve (args[0], &args[1], (char*)0);
+      execvp (*args, args);
       /* execlp reurned, wasn't successful */
       perror ("exec");
       fclose(stdin);  // avoid a linux stdio bug
@@ -129,8 +129,9 @@ char ** arg_parse (char *line, int *argcptr)
   //printf("%d args\n", argc);
   
   // Allocate memory
-  char** argarr = (char**) malloc((argc + 1) + sizeof(char*));
-
+  //char** argarr = (char**) malloc((argc + 1) + sizeof(char*));
+  char** argarr =  malloc((argc + 1) + sizeof(char*));
+  
   i = 0;
   int ac = 0;
   // Assign pointers and 0s
@@ -144,7 +145,7 @@ char ** arg_parse (char *line, int *argcptr)
       while (line[i] != ' ') {
 	if (line[i] == 0) break;
 	i++;
-      } line[i++] = '0';
+      } line[i++] = '\0';
     }
   } argarr[ac] = NULL;
 
@@ -156,13 +157,10 @@ char ** arg_parse (char *line, int *argcptr)
   }
   printf("zing\n");
   */
-  /* // Debug: print args in order
-  int x = 0;
+  // Debug: print args in order
+  /*
   for (int z = 0; z < argc; z++) { 
-    printf("\narg: %d = ", z);
-    while(argarr[z][x] != '0') {
-      printf("%c", argarr[z][x++]);
-    }x=0;
+    printf("arg: %d = %c\n", z, *argarr[z]);
   }
   */
   /* // Debug: print modified line
