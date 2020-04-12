@@ -48,9 +48,6 @@ main (void)
 
   /* Run it ... */
   processline (buffer);
-  
-  //int *ptr;
-  //arg_parse(buffer, ptr);
 
     }
 
@@ -70,7 +67,7 @@ void processline (char *line)
     char **args = arg_parse(line, &argc);
     //free(args);
     //if (argc == 0) return;
-    
+
     /* Start a new process to do the job. */
     cpid = fork();
     if (cpid < 0) {
@@ -93,7 +90,6 @@ void processline (char *line)
     
     /* Have the parent wait for child to complete */
     if (wait (&status) < 0) {
-      free(args);
       /* Wait wasn't successful */
       perror ("wait");
     }   
