@@ -65,13 +65,12 @@ void processline (char *line)
 
     int argc;
     char **args = arg_parse(line, &argc);
-    free(args);
-    //if (argc == 0) return;
-
+    free(args);// breaks
     /* Start a new process to do the job. */
     cpid = fork();
     if (cpid < 0) {
       /* Fork wasn't successful */
+      //free(args); breaks
       perror ("fork");
       return;
     }
@@ -79,6 +78,7 @@ void processline (char *line)
     /* Check for who we are! */
     if (cpid == 0) {
       /* We are the child! */
+//      free(args);
       //execlp (line, line, (char *)0);
       execvp (*args, args);
       /* execlp reurned, wasn't successful */
@@ -89,7 +89,8 @@ void processline (char *line)
     
     /* Have the parent wait for child to complete */
     if (wait (&status) < 0) {
-      /* Wait wasn't successful */
+      // free(args); BREAKS
+	/* Wait wasn't successful */
       perror ("wait");
     }   
 }
