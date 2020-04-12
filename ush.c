@@ -110,7 +110,7 @@ char ** arg_parse (char *line, int *argcptr)
   int inquote = 0;
   int quotec = 0;
   
-  // Count args
+  // Count args and handle "
   while (line[i] != 0) {
     //printf("count = %d, i:%d, char:%c\n", argc, i, line[i]);
     //skip spaces
@@ -129,8 +129,9 @@ char ** arg_parse (char *line, int *argcptr)
 	inquote = 1;
 	// set the value of the quote to its successor
 	line[i] = line[i+1];
-	// continue in the quote until another is found
+	//i++;
 	int loc = i;
+	// continue in the quote until another is found
 	//while ((line[loc] != '\"' && inquote == 1) || (line[loc] != 0)) {
 	while (line[loc] != 0) {
 	  // terminating quote is not found
@@ -139,10 +140,12 @@ char ** arg_parse (char *line, int *argcptr)
 	  line[loc] = line[loc + 1];
 	  printf("loc:%d, char:%c\n", loc, line[loc]);
 	  loc++;
+	  
 	}
 	// stop shifting the characters
 	inquote = 0;
 	printf("line = %s\n", line);
+	printf("line[%d] = %c\n", i, line[i]); 
 	// find end of arg
 	while (line[i] != ' ' && line[i] != '\"') {
 	  if (line[i] == 0) break;
@@ -153,11 +156,11 @@ char ** arg_parse (char *line, int *argcptr)
     }
   }
   if (argc == 0 || quotec % 2 == 1) return NULL;
-
+  
   printf("%d args\n", argc);
   printf("line = %s\n", line);
   printf("quotes = %d\n", quotec);
-
+  
   
   
   // Allocate memory
