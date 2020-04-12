@@ -65,14 +65,13 @@ void processline (char *line)
 
     int argc;
     char **args = arg_parse(line, &argc);
-    //free(args);
+    free(args);
     //if (argc == 0) return;
 
     /* Start a new process to do the job. */
     cpid = fork();
     if (cpid < 0) {
       /* Fork wasn't successful */
-      free(args);
       perror ("fork");
       return;
     }
