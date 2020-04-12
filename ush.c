@@ -24,6 +24,7 @@
 
 void processline (char *line);
 char ** arg_parse (char *line, int *argcptr);
+char * removeQuotes (char *line);
 
 /* Shell main */
 
@@ -36,27 +37,27 @@ main (void)
     while (1) {
 
         /* prompt and get line */
-	fprintf (stderr, "%% ");
-	if (fgets (buffer, LINELEN, stdin) != buffer)
-	  break;
+  fprintf (stderr, "%% ");
+  if (fgets (buffer, LINELEN, stdin) != buffer)
+    break;
 
         /* Get rid of \n at end of buffer. */
-	len = strlen(buffer);
-	if (buffer[len-1] == '\n')
-	    buffer[len-1] = 0;
+  len = strlen(buffer);
+  if (buffer[len-1] == '\n')
+      buffer[len-1] = 0;
 
-	/* Run it ... */
-	processline (buffer);
-	
-	//int *ptr;
-	//arg_parse(buffer, ptr);
+  /* Run it ... */
+  processline (buffer);
+  
+  //int *ptr;
+  //arg_parse(buffer, ptr);
 
     }
 
     if (!feof(stdin))
         perror ("read");
 
-    return 0;		/* Also known as exit (0); */
+    return 0;   /* Also known as exit (0); */
 }
 
 
@@ -142,7 +143,7 @@ char ** arg_parse (char *line, int *argcptr)
           }
         }
         if (line[i] == ' ') break;
-        //printf("i:%d, char:%c\n", argc, i, line[i]);
+        //printf("i:%d, char:%c\n", i, line[i]);
         i++;
       }
     }
@@ -169,6 +170,7 @@ char ** arg_parse (char *line, int *argcptr)
     // start arg
     if (line[i] != ' ' && line[i] != 0) 
     {
+      printf("172 i:%d, char:%c\n", i, line[i]);
       argarr[ac++] = &line[i++];
       // find end of arg
       while (line[i] != ' ' && inquote == 0) 
@@ -177,6 +179,7 @@ char ** arg_parse (char *line, int *argcptr)
         // find start quote
         if (line[i] == '\"')
         {
+          printf("181 i:%d, char:%c\n", i, line[i]);
           inquote = 1;
           i++;
           while (inquote == 1)
@@ -187,14 +190,17 @@ char ** arg_parse (char *line, int *argcptr)
               inquote = 0;
             }
             i++;
+            printf("192 i:%d, char:%c\n", i, line[i]);
           }
         }
+        i++;
       }
       line[i++] = 0;
-      i++;
+      //i++;
     }
   } 
   argarr[ac] = NULL;
+  line = removeQuotes(line);
 
   /* // Debug: print line[:] from given pointers
   int b = 0;
@@ -210,7 +216,6 @@ char ** arg_parse (char *line, int *argcptr)
   { 
     printf("arg: %d = %c\n", z, *argarr[z]);
   }
-  
   /* // Debug: print modified line
   printf("\nhello\n");
   for (int a = 0; a < strlen(line); a++) {
@@ -222,9 +227,32 @@ char ** arg_parse (char *line, int *argcptr)
   return argarr;
 }
 
-void removeQuotes(char* line)
+char* removeQuotes(char *line)
 {
-
+  int i = 0;
+  int src = 0;
+  int dest = 0;
+  while (line[i] != 0)
+  {
+    printf("line[%d]:%c\n", i, line[i]);
+    if (line[i] == '\"')
+    {
+      src = i + 1;
+      dest = i;
+      while (line[src] != '\"')
+      {
+        if (line[src] != '\"')
+        {
+          line[dest] = line[src];
+          src++;
+          dest++;
+        }
+      }
+    }
+    i++;
+    if(line[i] == 0) i++;
+  }
+  return line;
 }
 
 
