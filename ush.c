@@ -82,6 +82,7 @@ void processline (char *line)
     /* Check for who we are! */
     if (cpid == 0) {
       /* We are the child! */
+      free(args);
       //execlp (line, line, (char *)0);
       execvp (*args, args);
       /* execlp reurned, wasn't successful */
@@ -158,7 +159,7 @@ char ** arg_parse (char *line, int *argcptr)
   
   // Allocate memory
   //char** argarr = (char**) malloc((argc + 1) + sizeof(char*));
-  char** argarr =  (char**)malloc((argc + 1) + sizeof(char*));
+  char** argarr =  (char**) malloc((argc + 1) + sizeof(char*));
   
   i = 0;
   int ac = 0;
