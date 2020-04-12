@@ -137,13 +137,14 @@ char ** arg_parse (char *line, int *argcptr)
 	  // terminating quote is not found
 	  if (line[loc] == 0) return 0;
 	  // shift the array left and increment pointer
+	  if (line[loc] == '\"') inquote = 0;
 	  line[loc] = line[loc + 1];
-	  printf("loc:%d, char:%c\n", loc, line[loc]);
+	  printf("inquote:%d, loc:%d, char:%c\n", inquote, loc, line[loc]);
 	  loc++;
 	  
 	}
 	// stop shifting the characters
-	inquote = 0;
+	//inquote = 0;
 	printf("line = %s\n", line);
 	printf("line[%d] = %c\n", i, line[i]); 
 	// find end of arg
