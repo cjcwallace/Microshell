@@ -160,7 +160,7 @@ char ** arg_parse (char *line, int *argcptr)
   
   // Allocate memory
   //char** argarr = (char**) malloc((argc + 1) + sizeof(char*));
-  char** argarr =  malloc((argc + 1) + sizeof(char*));
+  char** argarr =  (char**)malloc((argc + 1) + sizeof(char*));
   
   i = 0;
   int ac = 0;
