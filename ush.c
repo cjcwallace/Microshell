@@ -67,7 +67,7 @@ void processline (char *line)
 
     int argc;
     char **args = arg_parse(line, &argc);
-    free(args);
+    //free(args);
     //if (argc == 0) return;
     
     /* Start a new process to do the job. */
@@ -92,6 +92,7 @@ void processline (char *line)
     
     /* Have the parent wait for child to complete */
     if (wait (&status) < 0) {
+      free(args);
       /* Wait wasn't successful */
       perror ("wait");
     }   
@@ -106,27 +107,58 @@ char ** arg_parse (char *line, int *argcptr)
 
   int argc = 0;
   int i = 0;
+  int inquote = 0;
+  int quotec = 0;
   
   // Count args
   while (line[i] != 0) {
     //printf("count = %d, i:%d, char:%c\n", argc, i, line[i]);
-    // skip spaces
+    //skip spaces
     while(line[i] == ' ') i++;
-    // start arg
-    if (line[i] != ' ' && line[i] != 0) {
-	argc++;
-	i++;
-      // find end of arg
-      while (line[i] != ' ') {
-	if (line[i] == 0) break;
-	//printf("i:%d, char:%c\n", argc, i, line[i]);
-	i++;
+    // start arg on nonspace, 0, " character
+    if (line[i] != ' ' && line[i] != 0 && inquote == 0) {
+      // found an arg, increment count
+      argc++;
+      i++;
+      // encountered a start quote
+      if (line[i] == '\"') {
+	printf("found quote\n");
+	// increase # of quotes found
+	quotec++;
+	// tells us we're inside a quote
+	inquote = 1;
+	// set the value of the quote to its successor
+	line[i] = line[i+1];
+	// continue in the quote until another is found
+	int loc = i;
+	//while ((line[loc] != '\"' && inquote == 1) || (line[loc] != 0)) {
+	while (line[loc] != 0) {
+	  // terminating quote is not found
+	  if (line[loc] == 0) return 0;
+	  // shift the array left and increment pointer
+	  line[loc] = line[loc + 1];
+	  printf("loc:%d, char:%c\n", loc, line[loc]);
+	  loc++;
+	}
+	// stop shifting the characters
+	inquote = 0;
+	printf("line = %s\n", line);
+	// find end of arg
+	while (line[i] != ' ' && line[i] != '\"') {
+	  if (line[i] == 0) break;
+	  printf("i:%d, char:%c\n", i, line[i]);
+	  i++;
+	}
       }
     }
   }
-  if (argc == 0) return NULL;
+  if (argc == 0 || quotec % 2 == 1) return NULL;
 
-  //printf("%d args\n", argc);
+  printf("%d args\n", argc);
+  printf("line = %s\n", line);
+  printf("quotes = %d\n", quotec);
+
+  
   
   // Allocate memory
   //char** argarr = (char**) malloc((argc + 1) + sizeof(char*));
@@ -173,8 +205,6 @@ char ** arg_parse (char *line, int *argcptr)
   *argcptr = argc;
   return argarr;
 }
-
-
 
 
 
