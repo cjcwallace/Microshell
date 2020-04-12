@@ -110,72 +110,48 @@ char ** arg_parse (char *line, int *argcptr)
   int inquote = 0;
   int quotec = 0;
   
-  // Count args and handle "
-  while (line[i] != 0) {
+  // Count args & quotes
+  while (line[i] != 0) 
+  {
     //printf("count = %d, i:%d, char:%c\n", argc, i, line[i]);
-    //skip spaces
-    while(line[i] == ' ' && inquote == 0) i++;
-    if (inquote == 1) {
-      if (line[i] == '\"') {
-        int loc = i;
-	      // continue in the quote until another is found
-	      //while ((line[loc] != '\"' && inquote == 1) || (line[loc] != 0)) {
-	      while (line[loc] != 0) {
-	        // terminating quote is not found
-	        if (line[loc] == 0) return 0;
-	        // shift the array left and increment pointer
-	        line[loc] = line[loc + 1];
-	        printf("inquote:%d, loc:%d, char:%c\n", inquote, loc, line[loc]);
-	        loc++;
-	      }
-
-      }
-    }
-    // start arg on nonspace, 0, " character
-    if (line[i] != ' ' && line[i] != 0 && inquote == 0) {
-      // found an arg, increment count
+    // skip spaces
+    while(line[i] == ' ') i++;
+    // start arg
+    if (line[i] != ' ' && line[i] != 0) {
       argc++;
-      i++;
-      // encountered a start quote
-      if (line[i] == '\"') {
-      	printf("found quote\n");
-      	// increase # of quotes found
-      	quotec++;
-       	// tells us we're inside a quote
-	      inquote = 1;
-      	// set the value of the quote to its successor
-	      line[i] = line[i+1];
-      	//i++;
-	      int loc = i;
-	      // continue in the quote until another is found
-	      //while ((line[loc] != '\"' && inquote == 1) || (line[loc] != 0)) {
-	      while (line[loc] != 0) {
-	        // terminating quote is not found
-	        if (line[loc] == 0) return 0;
-	        // shift the array left and increment pointer
-	        if (line[loc] == '\"') inquote = 0;
-	        line[loc] = line[loc + 1];
-	        printf("inquote:%d, loc:%d, char:%c\n", inquote, loc, line[loc]);
-	        loc++;
-	      }
-	      // stop shifting the characters
-	      //inquote = 0;
-	      printf("line = %s\n", line);
-	      printf("line[%d] = %c\n", i, line[i]); 
-	      // find end of arg
-	      while (line[i] != ' ' && line[i] != '\"') {
-	        if (line[i] == 0) break;
-	        printf("i:%d, char:%c\n", i, line[i]);
-	        i++;
-	      }
+      //i++;
+      // find end of arg
+      while (line[i] != ' ' && inquote == 0) 
+      {
+        if (line[i] == 0) break;
+        // find start quote
+        if (line[i] == '\"')
+        {
+          quotec++;
+          inquote = 1;
+          i++;
+          while (inquote == 1)
+          {
+            // found end quote
+            if (line[i] == '\"')
+            {
+              quotec++;
+              inquote = 0;
+            }
+            i++;
+          }
+        }
+        if (line[i] == ' ') break;
+        //printf("i:%d, char:%c\n", argc, i, line[i]);
+        i++;
       }
     }
   }
+  if (argc == 0) return NULL;
   if (argc == 0 || quotec % 2 == 1) return NULL;
   
   printf("%d args\n", argc);
   printf("line = %s\n", line);
-  printf("quotes = %d\n", quotec);
   
   
   
@@ -186,19 +162,39 @@ char ** arg_parse (char *line, int *argcptr)
   i = 0;
   int ac = 0;
   // Assign pointers and 0s
-  while (line[i] != 0) {
+  while (line[i] != 0) 
+  {
     // skip spaces
     while(line[i] == ' ') i++;
     // start arg
-    if (line[i] != ' ' && line[i] != 0) {
-	argarr[ac++] = &line[i++];
+    if (line[i] != ' ' && line[i] != 0) 
+    {
+      argarr[ac++] = &line[i++];
       // find end of arg
-      while (line[i] != ' ') {
-	if (line[i] == 0) break;
-	i++;
-      } line[i++] = 0;
+      while (line[i] != ' ' && inquote == 0) 
+      {
+        if (line[i] == 0) break;
+        // find start quote
+        if (line[i] == '\"')
+        {
+          inquote = 1;
+          i++;
+          while (inquote == 1)
+          {
+            // found end quote
+            if (line[i] == '\"')
+            {
+              inquote = 0;
+            }
+            i++;
+          }
+        }
+      }
+      line[i++] = 0;
+      i++;
     }
-  } argarr[ac] = NULL;
+  } 
+  argarr[ac] = NULL;
 
   /* // Debug: print line[:] from given pointers
   int b = 0;
@@ -209,11 +205,12 @@ char ** arg_parse (char *line, int *argcptr)
   printf("zing\n");
   */
   // Debug: print args in order
-  /*
-  for (int z = 0; z < argc; z++) { 
+  
+  for (int z = 0; z < argc; z++) 
+  { 
     printf("arg: %d = %c\n", z, *argarr[z]);
   }
-  */
+  
   /* // Debug: print modified line
   printf("\nhello\n");
   for (int a = 0; a < strlen(line); a++) {
@@ -223,6 +220,11 @@ char ** arg_parse (char *line, int *argcptr)
   */
   *argcptr = argc;
   return argarr;
+}
+
+void removeQuotes(char* line)
+{
+
 }
 
 
