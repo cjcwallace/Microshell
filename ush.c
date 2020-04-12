@@ -24,7 +24,7 @@
 
 void processline (char *line);
 char ** arg_parse (char *line, int *argcptr);
-char * removeQuotes (char *line);
+char * removeQuotes (char *line, int n, int quotes);
 
 /* Shell main */
 
@@ -106,6 +106,8 @@ char ** arg_parse (char *line, int *argcptr)
   /* return value: pointer to malloced area that points into line parameter  */
   /* call malloc(3) only once */
 
+  const int linelen = strlen(line);
+
   int argc = 0;
   int i = 0;
   int inquote = 0;
@@ -151,8 +153,8 @@ char ** arg_parse (char *line, int *argcptr)
   if (argc == 0) return NULL;
   if (argc == 0 || quotec % 2 == 1) return NULL;
   
-  printf("%d args\n", argc);
-  printf("line = %s\n", line);
+  //printf("%d args\n", argc);
+  //printf("line = %s\n", line);
   
   
   
@@ -170,7 +172,6 @@ char ** arg_parse (char *line, int *argcptr)
     // start arg
     if (line[i] != ' ' && line[i] != 0) 
     {
-      printf("172 i:%d, char:%c\n", i, line[i]);
       argarr[ac++] = &line[i++];
       // find end of arg
       while (line[i] != ' ' && inquote == 0) 
@@ -179,7 +180,6 @@ char ** arg_parse (char *line, int *argcptr)
         // find start quote
         if (line[i] == '\"')
         {
-          printf("181 i:%d, char:%c\n", i, line[i]);
           inquote = 1;
           i++;
           while (inquote == 1)
@@ -190,7 +190,6 @@ char ** arg_parse (char *line, int *argcptr)
               inquote = 0;
             }
             i++;
-            printf("192 i:%d, char:%c\n", i, line[i]);
           }
         }
         i++;
@@ -200,7 +199,7 @@ char ** arg_parse (char *line, int *argcptr)
     }
   } 
   argarr[ac] = NULL;
-  line = removeQuotes(line);
+  line = removeQuotes(line, linelen, quotec);
 
   /* // Debug: print line[:] from given pointers
   int b = 0;
@@ -227,30 +226,17 @@ char ** arg_parse (char *line, int *argcptr)
   return argarr;
 }
 
-char* removeQuotes(char *line)
+char* removeQuotes(char *line, int n, int quotes)
 {
-  int i = 0;
-  int src = 0;
   int dest = 0;
-  while (line[i] != 0)
+  printf("line length: %d\n", n);
+  for (int i = 0; i < n - quotes; i++)
   {
-    printf("line[%d]:%c\n", i, line[i]);
-    if (line[i] == '\"')
+    printf("line[i%d]: %c, line[dest%d]: %c\n", i, line[i], dest, line[dest]);
+    if (line[i] != '\"')
     {
-      src = i + 1;
-      dest = i;
-      while (line[src] != '\"')
-      {
-        if (line[src] != '\"')
-        {
-          line[dest] = line[src];
-          src++;
-          dest++;
-        }
-      }
+      line[dest++] = line[i];
     }
-    i++;
-    if(line[i] == 0) i++;
   }
   return line;
 }
