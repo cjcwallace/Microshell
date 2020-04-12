@@ -114,7 +114,23 @@ char ** arg_parse (char *line, int *argcptr)
   while (line[i] != 0) {
     //printf("count = %d, i:%d, char:%c\n", argc, i, line[i]);
     //skip spaces
-    while(line[i] == ' ') i++;
+    while(line[i] == ' ' && inquote == 0) i++;
+    if (inquote == 1) {
+      if (line[i] == '\"') {
+        int loc = i;
+	      // continue in the quote until another is found
+	      //while ((line[loc] != '\"' && inquote == 1) || (line[loc] != 0)) {
+	      while (line[loc] != 0) {
+	        // terminating quote is not found
+	        if (line[loc] == 0) return 0;
+	        // shift the array left and increment pointer
+	        line[loc] = line[loc + 1];
+	        printf("inquote:%d, loc:%d, char:%c\n", inquote, loc, line[loc]);
+	        loc++;
+	      }
+
+      }
+    }
     // start arg on nonspace, 0, " character
     if (line[i] != ' ' && line[i] != 0 && inquote == 0) {
       // found an arg, increment count
@@ -122,37 +138,36 @@ char ** arg_parse (char *line, int *argcptr)
       i++;
       // encountered a start quote
       if (line[i] == '\"') {
-	printf("found quote\n");
-	// increase # of quotes found
-	quotec++;
-	// tells us we're inside a quote
-	inquote = 1;
-	// set the value of the quote to its successor
-	line[i] = line[i+1];
-	//i++;
-	int loc = i;
-	// continue in the quote until another is found
-	//while ((line[loc] != '\"' && inquote == 1) || (line[loc] != 0)) {
-	while (line[loc] != 0) {
-	  // terminating quote is not found
-	  if (line[loc] == 0) return 0;
-	  // shift the array left and increment pointer
-	  if (line[loc] == '\"') inquote = 0;
-	  line[loc] = line[loc + 1];
-	  printf("inquote:%d, loc:%d, char:%c\n", inquote, loc, line[loc]);
-	  loc++;
-	  
-	}
-	// stop shifting the characters
-	//inquote = 0;
-	printf("line = %s\n", line);
-	printf("line[%d] = %c\n", i, line[i]); 
-	// find end of arg
-	while (line[i] != ' ' && line[i] != '\"') {
-	  if (line[i] == 0) break;
-	  printf("i:%d, char:%c\n", i, line[i]);
-	  i++;
-	}
+      	printf("found quote\n");
+      	// increase # of quotes found
+      	quotec++;
+       	// tells us we're inside a quote
+	      inquote = 1;
+      	// set the value of the quote to its successor
+	      line[i] = line[i+1];
+      	//i++;
+	      int loc = i;
+	      // continue in the quote until another is found
+	      //while ((line[loc] != '\"' && inquote == 1) || (line[loc] != 0)) {
+	      while (line[loc] != 0) {
+	        // terminating quote is not found
+	        if (line[loc] == 0) return 0;
+	        // shift the array left and increment pointer
+	        if (line[loc] == '\"') inquote = 0;
+	        line[loc] = line[loc + 1];
+	        printf("inquote:%d, loc:%d, char:%c\n", inquote, loc, line[loc]);
+	        loc++;
+	      }
+	      // stop shifting the characters
+	      //inquote = 0;
+	      printf("line = %s\n", line);
+	      printf("line[%d] = %c\n", i, line[i]); 
+	      // find end of arg
+	      while (line[i] != ' ' && line[i] != '\"') {
+	        if (line[i] == 0) break;
+	        printf("i:%d, char:%c\n", i, line[i]);
+	        i++;
+	      }
       }
     }
   }
