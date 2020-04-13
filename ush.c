@@ -23,7 +23,8 @@
 
 void processline(char *line);
 char **arg_parse(char *line, int *argcptr);
-char *removeQuotes(char *line, int n, int quotes);
+char *removeQuotes(char *line, int n, int quotes, char **argarr);
+char *removeQuote(char *line, int n, char **argarr);
 
 /* Shell main */
 
@@ -159,6 +160,7 @@ char **arg_parse(char *line, int *argcptr)
 
   i = 0;
   int ac = 0;
+  int currQ = 0;
   // Assign pointers and 0s
   while (line[i] != 0)
   {
@@ -198,8 +200,12 @@ char **arg_parse(char *line, int *argcptr)
     }
   }
   argarr[ac] = NULL;
-  line = removeQuotes(line, linelen, quotec);
-
+  if (quotec > 0)
+  {
+    line = removeQuotes(line, linelen, quotec, argarr);
+    //line = removeQuote(line, (linelen - quotec), argarr);
+  }
+  
   /* // Debug: print line[:] from given pointers
   int b = 0;
   while (argarr[b] != NULL || b == 0) {
@@ -209,12 +215,12 @@ char **arg_parse(char *line, int *argcptr)
   printf("zing\n");
   */
   // Debug: print args in order
-  /*
-  for (int z = 0; z < argc + 1; z++)
+  
+  for (int z = 0; z < argc; z++)
   {
-    printf("arg: %d = %c\n", z, *argarr[z]);
+    printf("arg[%d] = %c\n", z, *argarr[z]);
   }
-  */
+  
   /* // Debug: print modified line
   printf("\nhello\n");
   for (int a = 0; a < strlen(line); a++) {
@@ -226,10 +232,47 @@ char **arg_parse(char *line, int *argcptr)
   return argarr;
 }
 
-char *removeQuotes(char *line, int n, int quotes)
+char *removeQuote(char *line, int n, char **argarr)
+{
+  char *dest = line;  //write
+  char *src = line;   //read
+  int i = 0;
+  while (i < n)
+  {
+    if (*src != '\"')
+    {
+      *dest++ = *src;
+      /*
+      for (int a = 0; a < n; a++) 
+      {
+        printf("%c", line[a]);
+      } */
+      printf("\n%c\n", *dest);
+    }
+    ++src;
+    i++;
+  }
+  for (int a = 0; a < n; a++) 
+  {
+    printf("%c\n", line[a]);
+  }
+  /*
+  i = 0;
+  int ac = 0;
+  while (i < n)
+  {
+    if (line[i] == 0 && line[i + 1] != 0 && ac > 1) {
+      argarr[ac++] = &line[++i];
+    }
+  }
+  */
+  return line;
+}
+
+char *removeQuotes(char *line, int n, int quotes, char **argarr)
 {
   printf("n - quotes = %d\n", (n - quotes));
-  char dest = 0; //write
+  int dest = 0; //write
   int src = 0;  //read
   //while (line[dest] != 0) {
   while (dest < n)//(n-quotes) - quotes)
