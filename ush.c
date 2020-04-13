@@ -154,6 +154,7 @@ char **arg_parse(char *line, int *argcptr)
   if (argc == 0 || quotec % 2 == 1)
     return NULL;
 
+  printf("args=%d\n", argc);
   // Allocate memory
   char **argarr = (char **)malloc((argc + 1) * sizeof(char *));
 
@@ -197,37 +198,19 @@ char **arg_parse(char *line, int *argcptr)
         i++;
       }
       line[i++] = 0;
-      //i++;
     }
   }
   argarr[ac] = NULL;
   if (quotec > 0)
   {
     line = removeQuotes(line, linelen, quotec, argarr);
-    //line = removeQuote(line, (linelen - quotec), argarr);
   }
-  
-  /* // Debug: print line[:] from given pointers
-  int b = 0;
-  while (argarr[b] != NULL || b == 0) {
-    printf("argarr[%d] = %s\n", b, argarr[b]);
-    b++;
-  }
-  printf("zing\n");
-  */
   // Debug: print args in order
-  
+  /*
   for (int z = 0; z < argc; z++)
   {
     printf("arg[%d] = %c\n", z, *argarr[z]);
   }
-  
-  /* // Debug: print modified line
-  printf("\nhello\n");
-  for (int a = 0; a < strlen(line); a++) {
-    printf("%c", line[a]);
-  }
-  printf("\nbye\n");
   */
   *argcptr = argc;
   return argarr;
@@ -238,19 +221,20 @@ char *removeQuotes(char *line, int n, int quotes, char **argarr)
   printf("n - quotes = %d\n", (n - quotes));
   int dest = 0; //write
   int src = 0;  //read
-  //while (line[dest] != 0) {
-  while (dest < n)//(n-quotes) - quotes)
+  while (dest < n)
   {
-    if (line[src] != '\"')// && line[src + 1] != 0)
+    if (line[src] != '\"')
     {
       line[dest++] = line[src];
-      for (int a = 0; a < n; a++) 
-      {
-        printf("%c", line[a]);
-      }
-      printf("\n");
     }
     if (src < n) src++;
   }
+  /*
+  for (int a = 0; a < n; a++) 
+  {
+    printf("%c", line[a]);
+  }
+  */
+  printf("\n");
   return line;
 }
