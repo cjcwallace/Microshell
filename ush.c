@@ -15,87 +15,86 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-
-/* Constants */ 
+/* Constants */
 
 #define LINELEN 1024
 
 /* Prototypes */
 
-void processline (char *line);
-char ** arg_parse (char *line, int *argcptr);
-char * removeQuotes (char *line, int n, int quotes);
+void processline(char *line);
+char **arg_parse(char *line, int *argcptr);
+char *removeQuotes(char *line, int n, int quotes);
 
 /* Shell main */
 
-int
-main (void)
+int main(void)
 {
-    char   buffer [LINELEN];
-    int    len;
+  char buffer[LINELEN];
+  int len;
 
-    while (1) {
+  while (1)
+  {
 
-        /* prompt and get line */
-  fprintf (stderr, "%% ");
-  if (fgets (buffer, LINELEN, stdin) != buffer)
-    break;
+    /* prompt and get line */
+    fprintf(stderr, "%% ");
+    if (fgets(buffer, LINELEN, stdin) != buffer)
+      break;
 
-        /* Get rid of \n at end of buffer. */
-  len = strlen(buffer);
-  if (buffer[len-1] == '\n')
-      buffer[len-1] = 0;
+    /* Get rid of \n at end of buffer. */
+    len = strlen(buffer);
+    if (buffer[len - 1] == '\n')
+      buffer[len - 1] = 0;
 
-  /* Run it ... */
-  processline (buffer);
+    /* Run it ... */
+    processline(buffer);
+  }
 
-    }
+  if (!feof(stdin))
+    perror("read");
 
-    if (!feof(stdin))
-        perror ("read");
-
-    return 0;   /* Also known as exit (0); */
+  return 0; /* Also known as exit (0); */
 }
 
-
-void processline (char *line)
+void processline(char *line)
 {
-    pid_t  cpid;
-    int    status;
+  pid_t cpid;
+  int status;
 
-    int argc;
-    char **args = arg_parse(line, &argc);
-    free(args);// breaks
-    /* Start a new process to do the job. */
-    cpid = fork();
-    if (cpid < 0) {
-      /* Fork wasn't successful */
-      //free(args); breaks
-      perror ("fork");
-      return;
-    }
-    
-    /* Check for who we are! */
-    if (cpid == 0) {
-      /* We are the child! */
-//      free(args);
-      //execlp (line, line, (char *)0);
-      execvp (*args, args);
-      /* execlp reurned, wasn't successful */
-      perror ("exec");
-      fclose(stdin);  // avoid a linux stdio bug
-      exit (127);
-    }
-    
-    /* Have the parent wait for child to complete */
-    if (wait (&status) < 0) {
-      // free(args); BREAKS
-	/* Wait wasn't successful */
-      perror ("wait");
-    }   
+  int argc;
+  char **args = arg_parse(line, &argc);
+  /* Start a new process to do the job. */
+  cpid = fork();
+  if (cpid < 0)
+  {
+    /* Fork wasn't successful */
+    //free(args); breaks
+    perror("fork");
+    return;
+  }
+
+  /* Check for who we are! */
+  if (cpid == 0)
+  {
+    /* We are the child! */
+    //execlp (line, line, (char *)0);
+    execvp(*args, args);
+    /* execlp reurned, wasn't successful */
+    perror("exec");
+    fclose(stdin); // avoid a linux stdio bug
+    exit(127);
+  }
+
+  /* Have the parent wait for child to complete */
+  if (wait(&status) < 0)
+  {
+    // free(args); BREAKS
+    /* Wait wasn't successful */
+    perror("wait");
+  }
+  free(args);
 }
 
-char ** arg_parse (char *line, int *argcptr)
+char **arg_parse(char *line, int *argcptr)
 {
   /* line points to character array containing command to be processed */
   /* argcptr points to int variable representing number of args in line */
@@ -108,21 +107,24 @@ char ** arg_parse (char *line, int *argcptr)
   int i = 0;
   int inquote = 0;
   int quotec = 0;
-  
+
   // Count args & quotes
-  while (line[i] != 0) 
+  while (line[i] != 0)
   {
     //printf("count = %d, i:%d, char:%c\n", argc, i, line[i]);
     // skip spaces
-    while(line[i] == ' ') i++;
+    while (line[i] == ' ')
+      i++;
     // start arg
-    if (line[i] != ' ' && line[i] != 0) {
+    if (line[i] != ' ' && line[i] != 0)
+    {
       argc++;
       //i++;
       // find end of arg
-      while (line[i] != ' ' && inquote == 0) 
+      while (line[i] != ' ' && inquote == 0)
       {
-        if (line[i] == 0) break;
+        if (line[i] == 0)
+          break;
         // find start quote
         if (line[i] == '\"')
         {
@@ -140,39 +142,42 @@ char ** arg_parse (char *line, int *argcptr)
             i++;
           }
         }
-        if (line[i] == ' ') break;
+        if (line[i] == ' ')
+          break;
         //printf("i:%d, char:%c\n", i, line[i]);
         i++;
       }
     }
   }
-  if (argc == 0) return NULL;
-  if (argc == 0 || quotec % 2 == 1) return NULL;
-  
+  if (argc == 0)
+    return NULL;
+  if (argc == 0 || quotec % 2 == 1)
+    return NULL;
+
   //printf("%d args\n", argc);
   //printf("line = %s\n", line);
-  
-  
-  
+
   // Allocate memory
   //char** argarr = (char**) malloc((argc + 1) + sizeof(char*));
-  char** argarr =  (char**)malloc((argc + 1) + sizeof(char*));
-  
+  char **argarr = (char **)malloc((argc + 1) + sizeof(char *));
+
   i = 0;
   int ac = 0;
   // Assign pointers and 0s
-  while (line[i] != 0) 
+  while (line[i] != 0)
   {
     // skip spaces
-    while(line[i] == ' ') i++;
+    while (line[i] == ' ')
+      i++;
     // start arg
-    if (line[i] != ' ' && line[i] != 0) 
+    if (line[i] != ' ' && line[i] != 0)
     {
       argarr[ac++] = &line[i++];
       // find end of arg
-      while (line[i] != ' ' && inquote == 0) 
+      while (line[i] != ' ' && inquote == 0)
       {
-        if (line[i] == 0) break;
+        if (line[i] == 0)
+          break;
         // find start quote
         if (line[i] == '\"')
         {
@@ -193,7 +198,7 @@ char ** arg_parse (char *line, int *argcptr)
       line[i++] = 0;
       //i++;
     }
-  } 
+  }
   argarr[ac] = NULL;
   line = removeQuotes(line, linelen, quotec);
 
@@ -206,9 +211,9 @@ char ** arg_parse (char *line, int *argcptr)
   printf("zing\n");
   */
   // Debug: print args in order
-  
-  for (int z = 0; z < argc; z++) 
-  { 
+
+  for (int z = 0; z < argc; z++)
+  {
     printf("arg: %d = %c\n", z, *argarr[z]);
   }
   /* // Debug: print modified line
@@ -222,7 +227,7 @@ char ** arg_parse (char *line, int *argcptr)
   return argarr;
 }
 
-char* removeQuotes(char *line, int n, int quotes)
+char *removeQuotes(char *line, int n, int quotes)
 {
   int dest = 0;
   printf("line length: %d\n", n);
@@ -236,28 +241,3 @@ char* removeQuotes(char *line, int n, int quotes)
   }
   return line;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
