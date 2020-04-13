@@ -62,6 +62,7 @@ void processline(char *line)
 
   int argc;
   char **args = arg_parse(line, &argc);
+
   /* Start a new process to do the job. */
   cpid = fork();
   if (cpid < 0)
@@ -87,11 +88,10 @@ void processline(char *line)
   /* Have the parent wait for child to complete */
   if (wait(&status) < 0)
   {
-    // free(args); BREAKS
+    free(args);
     /* Wait wasn't successful */
     perror("wait");
   }
-  free(args);
 }
 
 char **arg_parse(char *line, int *argcptr)
@@ -154,12 +154,8 @@ char **arg_parse(char *line, int *argcptr)
   if (argc == 0 || quotec % 2 == 1)
     return NULL;
 
-  //printf("%d args\n", argc);
-  //printf("line = %s\n", line);
-
   // Allocate memory
-  //char** argarr = (char**) malloc((argc + 1) + sizeof(char*));
-  char **argarr = (char **)malloc((argc + 1) + sizeof(char *));
+  char **argarr = (char **)malloc((argc + 1) * sizeof(char *));
 
   i = 0;
   int ac = 0;
@@ -172,7 +168,9 @@ char **arg_parse(char *line, int *argcptr)
     // start arg
     if (line[i] != ' ' && line[i] != 0)
     {
-      argarr[ac++] = &line[i++];
+      //argarr[ac++] = &line[i++];
+      argarr[ac] = &line[i];
+      ac++; i++;
       // find end of arg
       while (line[i] != ' ' && inquote == 0)
       {
@@ -211,11 +209,12 @@ char **arg_parse(char *line, int *argcptr)
   printf("zing\n");
   */
   // Debug: print args in order
-
-  for (int z = 0; z < argc; z++)
+  /*
+  for (int z = 0; z < argc + 1; z++)
   {
     printf("arg: %d = %c\n", z, *argarr[z]);
   }
+  */
   /* // Debug: print modified line
   printf("\nhello\n");
   for (int a = 0; a < strlen(line); a++) {
@@ -229,15 +228,22 @@ char **arg_parse(char *line, int *argcptr)
 
 char *removeQuotes(char *line, int n, int quotes)
 {
-  int dest = 0;
-  printf("line length: %d\n", n);
-  for (int i = 0; i < n - quotes; i++)
+  printf("n - quotes = %d\n", (n - quotes));
+  char dest = 0; //write
+  int src = 0;  //read
+  //while (line[dest] != 0) {
+  while (dest < n)//(n-quotes) - quotes)
   {
-    printf("line[i%d]: %c, line[dest%d]: %c\n", i, line[i], dest, line[dest]);
-    if (line[i] != '\"')
+    if (line[src] != '\"')// && line[src + 1] != 0)
     {
-      line[dest++] = line[i];
+      line[dest++] = line[src];
+      for (int a = 0; a < n; a++) 
+      {
+        printf("%c", line[a]);
+      }
+      printf("\n");
     }
+    if (src < n) src++;
   }
   return line;
 }
