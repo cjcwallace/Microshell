@@ -101,8 +101,6 @@ char **arg_parse(char *line, int *argcptr)
   /* return value: pointer to malloced area that points into line parameter  */
   /* call malloc(3) only once */
 
-  const int linelen = strlen(line);
-
   int argc = 0;
   int i = 0;
   int inquote = 0;
@@ -111,30 +109,23 @@ char **arg_parse(char *line, int *argcptr)
   // Count args & quotes
   while (line[i] != 0)
   {
-    //printf("count = %d, i:%d, char:%c\n", argc, i, line[i]);
-    // skip spaces
-    while (line[i] == ' ')
+    while (line[i] == ' ') // skip spaces
       i++;
-    // start arg
-    if (line[i] != ' ' && line[i] != 0)
+    if (line[i] != ' ' && line[i] != 0) // start arg
     {
       argc++;
-      //i++;
-      // find end of arg
-      while (line[i] != ' ' && inquote == 0)
+      while (line[i] != ' ' && inquote == 0) // find end of arg
       {
         if (line[i] == 0)
           break;
-        // find start quote
-        if (line[i] == '\"')
+        if (line[i] == '\"') // find start quote
         {
           quotec++;
           inquote = 1;
           i++;
           while (inquote == 1)
           {
-            // found end quote
-            if (line[i] == '\"')
+            if (line[i] == '\"') // found end quote
             {
               quotec++;
               inquote = 0;
@@ -144,7 +135,6 @@ char **arg_parse(char *line, int *argcptr)
         }
         if (line[i] == ' ')
           break;
-        //printf("i:%d, char:%c\n", i, line[i]);
         i++;
       }
     }
@@ -152,66 +142,49 @@ char **arg_parse(char *line, int *argcptr)
   if (argc == 0)
     return NULL;
   if (argc == 0 || quotec % 2 == 1)
+  {
     return NULL;
+  }
+    
 
   printf("args=%d\n", argc);
   // Allocate memory
   char **argarr = (char **)malloc((argc + 1) * sizeof(char *));
 
-  i = 0;
+  i = 0; // src
+  int dest = 0; // dest
   int ac = 0;
-  int currQ = 0;
+
+  while (line[i] == ' ') i++; // skip lead spaces
+
   // Assign pointers and 0s
   while (line[i] != 0)
   {
-    // skip spaces
-    while (line[i] == ' ')
-      i++;
-    // start arg
-    if (line[i] != ' ' && line[i] != 0)
+    if (line[i] != ' ')  // start arg
     {
-      //argarr[ac++] = &line[i++];
-      argarr[ac] = &line[i - currQ];
-      ac++; i++;
-      // find end of arg
-      while (line[i] != ' ' && inquote == 0)
+      argarr[ac++] = &line[i]; // assign pointer to nonspace character
+      dest = i;
+      while (line[i] != ' ') // loop until we hit a space
       {
-        if (line[i] == 0)
-          break;
-        // find start quote
-        if (line[i] == '\"')
+        printf("arg:%s\n", argarr[ac - 1]);
+        if (line[i] != '\"') // find start quote
         {
-          inquote = 1;
-          currQ++;
-          i++;
-          while (inquote == 1)
-          {
-            // found end quote
-            if (line[i] == '\"')
-            {
-              inquote = 0;
-              currQ++;
-            }
-            i++;
-          }
+          line[dest++] = line[i];
         }
         i++;
-      }
-      line[i++] = 0;
+      } // end while
+      line[i] = 0; // assign pointer to end of arg
     }
+    i++; // i is a space, increment
   }
   argarr[ac] = NULL;
-  if (quotec > 0)
-  {
-    line = removeQuotes(line, linelen, quotec, argarr);
-  }
   // Debug: print args in order
-  /*
+  
   for (int z = 0; z < argc; z++)
   {
     printf("arg[%d] = %c\n", z, *argarr[z]);
   }
-  */
+  
   *argcptr = argc;
   return argarr;
 }
