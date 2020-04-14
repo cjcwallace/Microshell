@@ -155,59 +155,52 @@ char **arg_parse(char *line, int *argcptr)
   int dest = 0; // dest
   int ac = 0;
 
-  while (line[i] == ' ') i++; // skip lead spaces
+  const int len = strlen(line);
 
+  while (line[i] == ' ') i++; // skip lead spaces
   // Assign pointers and 0s
   while (line[i] != 0)
   {
     if (line[i] != ' ')  // start arg
     {
-      argarr[ac++] = &line[i]; // assign pointer to nonspace character
-      dest = i;
+      argarr[ac++] = &line[dest]; // assign pointer to start of arg
       while (line[i] != ' ') // loop until we hit a space
       {
-        printf("arg:%s\n", argarr[ac - 1]);
-        if (line[i] != '\"') // find start quote
+        if (line[i] == '\"') // find start quote
         {
-          line[dest++] = line[i];
+          i++; // get i off quote
+          printf("i:%d, dest:%d\n", i, dest);
+          printf("line[i]:%c, line[dest]:%c\n", line[i], line[dest]);
+          while (line[i] != 0 && line[i] != '\"') // loop until end or terminating quote
+          {
+            if (line[i] != '\"') 
+            {
+              line[dest++] = line[i];
+            }
+            i++;
+          }
+          //i++;
+          line[dest] = line[i++];
+          continue;
         }
-        i++;
+        //dest++;
+        //i++;
+        line[dest++] = line[i++];
       } // end while
-      line[i] = 0; // assign pointer to end of arg
+      //printf("line[%d]:%c\n", dest, line[dest]);
+      line[dest++] = 0; // assign pointer to end of arg
     }
     i++; // i is a space, increment
   }
   argarr[ac] = NULL;
+  printf("\ni:%d, dest:%d\n",i,dest);
   // Debug: print args in order
   
   for (int z = 0; z < argc; z++)
   {
-    printf("arg[%d] = %c\n", z, *argarr[z]);
+    printf("arg[%d] = %s\n", z, argarr[z]);
   }
   
   *argcptr = argc;
   return argarr;
-}
-
-char *removeQuotes(char *line, int n, int quotes, char **argarr)
-{
-  printf("n - quotes = %d\n", (n - quotes));
-  int dest = 0; //write
-  int src = 0;  //read
-  while (dest < n)
-  {
-    if (line[src] != '\"')
-    {
-      line[dest++] = line[src];
-    }
-    if (src < n) src++;
-  }
-  /*
-  for (int a = 0; a < n; a++) 
-  {
-    printf("%c", line[a]);
-  }
-  */
-  printf("\n");
-  return line;
 }
