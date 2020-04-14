@@ -145,9 +145,6 @@ char **arg_parse(char *line, int *argcptr)
   {
     return NULL;
   }
-    
-
-  printf("args=%d\n", argc);
   // Allocate memory
   char **argarr = (char **)malloc((argc + 1) * sizeof(char *));
 
@@ -159,7 +156,7 @@ char **arg_parse(char *line, int *argcptr)
 
   while (line[i] == ' ') i++; // skip lead spaces
   // Assign pointers and 0s
-  while (line[i] != 0)
+  while (line[i] != 0 && i < len)
   {
     if (line[i] != ' ')  // start arg
     {
@@ -169,37 +166,24 @@ char **arg_parse(char *line, int *argcptr)
         if (line[i] == '\"') // find start quote
         {
           i++; // get i off quote
-          printf("i:%d, dest:%d\n", i, dest);
-          printf("line[i]:%c, line[dest]:%c\n", line[i], line[dest]);
           while (line[i] != 0 && line[i] != '\"') // loop until end or terminating quote
           {
-            if (line[i] != '\"') 
+            if (line[i] != '\"') // replace characters that aren't "
             {
               line[dest++] = line[i];
             }
             i++;
           }
-          //i++;
           line[dest] = line[i++];
           continue;
         }
-        //dest++;
-        //i++;
         line[dest++] = line[i++];
-      } // end while
-      //printf("line[%d]:%c\n", dest, line[dest]);
+      }
       line[dest++] = 0; // assign pointer to end of arg
     }
     i++; // i is a space, increment
   }
   argarr[ac] = NULL;
-  printf("\ni:%d, dest:%d\n",i,dest);
-  // Debug: print args in order
-  
-  for (int z = 0; z < argc; z++)
-  {
-    printf("arg[%d] = %s\n", z, argarr[z]);
-  }
   
   *argcptr = argc;
   return argarr;
