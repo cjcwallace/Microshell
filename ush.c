@@ -1,4 +1,5 @@
-/* CS 352 -- Micro Shell!  
+/* Cameron Wallace
+ * CS 352 -- Micro Shell!  
  *
  *   Sept 21, 2000,  Phil Nelson
  *   Modified April 8, 2001 
