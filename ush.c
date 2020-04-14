@@ -1,4 +1,9 @@
-/* CS 352 -- Micro Shell!  
+/*   Cameron Wallace
+ *   April 1, 2020
+ *   CSCI 347 Spring 2020
+ *   Assignment 2
+ *
+ *   CS 352 -- Micro Shell!  
  *
  *   Sept 21, 2000,  Phil Nelson
  *   Modified April 8, 2001 
@@ -68,7 +73,6 @@ void processline(char *line)
   if (cpid < 0)
   {
     /* Fork wasn't successful */
-    //free(args); breaks
     perror("fork");
     return;
   }
@@ -77,7 +81,6 @@ void processline(char *line)
   if (cpid == 0)
   {
     /* We are the child! */
-    //execlp (line, line, (char *)0);
     execvp(*args, args);
     /* execlp reurned, wasn't successful */
     perror("exec");
@@ -125,6 +128,11 @@ char **arg_parse(char *line, int *argcptr)
           i++;
           while (inquote == 1)
           {
+            if (line[i] == 0)
+            {
+              fprintf(stderr,"Odd number of quotes.\n");
+              return NULL; 
+            }
             if (line[i] == '\"') // found end quote
             {
               quotec++;
@@ -139,14 +147,16 @@ char **arg_parse(char *line, int *argcptr)
       }
     }
   }
-  if (argc == 0)
-    return NULL;
-  if (argc == 0 || quotec % 2 == 1)
-  {
-    return NULL;
-  }
   // Allocate memory
   char **argarr = (char **)malloc((argc + 1) * sizeof(char *));
+
+  if (argc == 0)
+    return NULL;
+  if (quotec % 2 == 1)
+  {
+    fprintf(stderr,"Odd number of quotes.\n");
+    return NULL;
+  }
 
   i = 0; // src
   int dest = 0; // dest
@@ -166,7 +176,7 @@ char **arg_parse(char *line, int *argcptr)
         if (line[i] == '\"') // find start quote
         {
           i++; // get i off quote
-          while (line[i] != 0 && line[i] != '\"') // loop until end or terminating quote
+          while (line[i] != 0 && line[i] != '\"') // loop until eos or quote
           {
             if (line[i] != '\"') // replace characters that aren't "
             {
