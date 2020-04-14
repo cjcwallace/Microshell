@@ -126,6 +126,11 @@ char **arg_parse(char *line, int *argcptr)
           i++;
           while (inquote == 1)
           {
+            if (line[i] == 0)
+            {
+              fprintf(stderr,"Odd number of quotes.\n");
+              return NULL; 
+            }
             if (line[i] == '\"') // found end quote
             {
               quotec++;
@@ -140,14 +145,17 @@ char **arg_parse(char *line, int *argcptr)
       }
     }
   }
-  if (argc == 0)
-    return NULL;
-  if (argc == 0 || quotec % 2 == 1)
-  {
-    return NULL;
-  }
+  printf("quotec:%d\n", quotec);
   // Allocate memory
   char **argarr = (char **)malloc((argc + 1) * sizeof(char *));
+
+  if (argc == 0)
+    return NULL;
+  if (quotec % 2 == 1)
+  {
+    fprintf(stderr,"Odd number of quotes.\n");
+    return NULL;
+  }
 
   i = 0; // src
   int dest = 0; // dest
@@ -167,7 +175,7 @@ char **arg_parse(char *line, int *argcptr)
         if (line[i] == '\"') // find start quote
         {
           i++; // get i off quote
-          while (line[i] != 0 && line[i] != '\"') // loop until end or terminating quote
+          while (line[i] != 0 && line[i] != '\"') // loop until eos or quote
           {
             if (line[i] != '\"') // replace characters that aren't "
             {
