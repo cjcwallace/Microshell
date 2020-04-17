@@ -5,7 +5,15 @@
  */
 
 #include <stdio.h>
+#include "defn.h"
 
-/* Prototypes */
+   /* newsize default 1024 */
+   /* orig: input string, scan only once */
+   /* new: output string */
+   /* return: expand un/sucessful */
+   /* expand should not change original array */
 
-int expand (char *orig, char *new, int newsize);
+int expand (char *orig, char *new, int newsize)
+{
+
+}

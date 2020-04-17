@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include "defn.h"
 
 /* Constants */
 
@@ -64,7 +65,10 @@ void processline(char *line)
 {
   pid_t cpid;
   int status;
-
+  
+  char newEx;
+  //expand(line, newEx, LINELEN);
+  
   int argc;
   char **args = arg_parse(line, &argc);
 
