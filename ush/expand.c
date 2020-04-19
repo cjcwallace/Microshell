@@ -31,38 +31,39 @@ int expand (char *orig, char *new, int newsize)
 	  if ( orig[j] == '{' ) /* Start of environment name */ 
 	    {
 	      while ( orig[j] != '}' ) /* get variable name */
-		{
-		  if ( orig[j] == 0)
 		    {
-		      fprintf(stderr, "No closing } found.\n");
-		      return -1;
+		        if ( orig[j] == 0)
+		        {
+		            fprintf(stderr, "No closing } found.\n");
+		            return -1;
+		        }
+		    j++;
 		    }
-		  j++;
-		}
-	    }
+		    orig[j] = 0; /* Temp replace } with 0 */
+    	    rv = getenv( &orig[j] );  /* return env value */
+    	    if ( rv == 0 ) /* check if rv is NULL */
+                {
+                break;          
+                }
+            if ( (strlen(rv) + strlen(orig) ) > newsize )
+    	        {
+    	        fprintf(stderr, "Out of bounds error.\n");
+    	        return -1;
+    	        }
+        	  printf("rv:%s\n", rv);
+        	  orig[j] = '}'; /* Revert line to original */
+        	  int a = 0;
+        	  j = envIndex;
+        	  while ( rv[a] != 0 ) /* copy value to new string */
+        	    {
+        	      new[j++] = rv[a++];
+        	    }
+    	    }
 	  if (orig[j] == '$' ) /* ppid */
 	    {
 	      rv = getppid();
 	    }
-	  orig[j] = 0; /* Temp replace } with 0 */
-	  rv = getenv( &orig[j] );  /* return env value */
-	  if ( rv == 0 ) /* check if rv is NULL */
-	    {
-	      break;
-	    }
-	  if ( (strlen(rv) + strlen(orig) ) > newsize )
-	    {
-	      fprintf(stderr, "Out of bounds error.\n");
-	      return -1;
-	    }
-	  printf("rv:%s\n", rv);
-	  orig[j] = '}'; /* Revert line to original */
-	  int a = 0;
-	  j = envIndex;
-	  while ( rv[a] != 0 ) /* copy value to new string */
-	    {
-	      new[j++] = rv[a++];
-	    }
+	  
 	}
       new[j++] = orig[i++];
     }
