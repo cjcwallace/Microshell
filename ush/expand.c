@@ -30,7 +30,6 @@ int expand (char *orig, char *new, int newsize)
 	  int replaceIndex = j;
 	  //printf("replacein:%d\n",replaceIndex);
 	  i++;
-	  int a = 0;
 	  if ( orig[i] == '{' ) /* Start of environment name */ 
 	    {
 	      int envIndex = i + 1;
@@ -58,15 +57,9 @@ int expand (char *orig, char *new, int newsize)
 	      orig[i++] = '}'; /* Revert line to original */
 	      j = replaceIndex;
 	      writeNew( new, rv, &j );
-	      /*
-	      while ( rv[a] != 0 ) /* copy value to new string 
-		{
-		  new[j++] = rv[a++];
-		  //printf("j:%d, writing rv new:%s\n", j, new);
-		}
-	      */
-	      if ( orig[i+1] == 0 ) break;
-    	    }
+	      if ( orig[i] == 0 ) break;
+	      if ( orig[i] == '$') continue;
+	    }
 	  if (orig[i] == '$' ) /* ppid */
 	    {
 	      int pid = getppid();
@@ -75,14 +68,8 @@ int expand (char *orig, char *new, int newsize)
 	      //printf("pid:%d, rv: %s\n",pid, rv);
 	      j = replaceIndex;
 	      writeNew( new, rv, &j );
-	      /*
-	      while ( rv[a] != 0 )
-		{
-		  new[j++] = rv[a++];
-		  //printf("j:%d writing rv new:%s\n", j, new);
-		}
-	      */
 	      if ( orig[++i] == 0 ) break;
+	      if ( orig[i] == '$' ) continue;
 	    }
 	  //printf("j:%d, i:%d, new:%s\n",j,i,new);
 	}
@@ -95,7 +82,7 @@ int expand (char *orig, char *new, int newsize)
 int writeNew (char *new, char *rv, int *j)
 {
   int a = 0;
-  while ( rv[a] != 0 )
+  while ( rv[a] != 0 ) /* copy value to new string */
     {
       new[*j] = rv[a++];
       *j = *j + 1;
