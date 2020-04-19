@@ -23,45 +23,51 @@ int expand (char *orig, char *new, int newsize)
   char *rv;
   while ( orig[i] != 0 )
     {
-      printf("orig[%d]:%c\n",i,orig[i]);
+      printf("orig[%d]:%s\n",i,orig);
+      printf("new[%d]:%s\n",j,new);
       if ( orig[i] == '$' )
 	{
-	  int envIndex = i;
+	  int replaceIndex = i;
 	  int j = i + 1;
 	  if ( orig[j] == '{' ) /* Start of environment name */ 
 	    {
+	      int envIndex = j + 1;
 	      while ( orig[j] != '}' ) /* get variable name */
+		{
+		  if ( orig[j] == 0)
 		    {
-		        if ( orig[j] == 0)
-		        {
-		            fprintf(stderr, "No closing } found.\n");
-		            return -1;
-		        }
-		    j++;
+		      fprintf(stderr, "No closing } found.\n");
+		      return -1;
 		    }
-		    orig[j] = 0; /* Temp replace } with 0 */
-    	    rv = getenv( &orig[j] );  /* return env value */
-    	    if ( rv == 0 ) /* check if rv is NULL */
+		  j++;
+		}
+	      i = j;
+	      orig[j] = 0; /* Temp replace } with 0 */
+	      rv = getenv( &orig[envIndex] );  /* return env value */
+	      if ( rv == 0 ) /* check if rv is NULL */
                 {
-                break;          
+		  printf("rv is null.\n");
+		  break;          
                 }
-            if ( (strlen(rv) + strlen(orig) ) > newsize )
+	      if ( (strlen(rv) + strlen(orig) ) > newsize )
     	        {
-    	        fprintf(stderr, "Out of bounds error.\n");
-    	        return -1;
+		  fprintf(stderr, "Out of bounds error.\n");
+		  return -1;
     	        }
-        	  printf("rv:%s\n", rv);
-        	  orig[j] = '}'; /* Revert line to original */
-        	  int a = 0;
-        	  j = envIndex;
-        	  while ( rv[a] != 0 ) /* copy value to new string */
-        	    {
-        	      new[j++] = rv[a++];
-        	    }
+	      printf("rv:%s\n", rv);
+	      orig[j] = '}'; /* Revert line to original */
+	      int a = 0;
+	      j = replaceIndex;
+	      while ( rv[a] != 0 ) /* copy value to new string */
+		{
+		  new[j++] = rv[a++];
+		  printf("writing rv new:%s\n", new);
+		}
+	      if ( orig[i+1] == 0 ) break;
     	    }
 	  if (orig[j] == '$' ) /* ppid */
 	    {
-	      rv = getppid();
+	      pid_t parentID = getppid();
 	    }
 	  
 	}
