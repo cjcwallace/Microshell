@@ -11,7 +11,7 @@ ush: $(OUTF)
 	$(CC) $(CFlags) -o ush $(OUTF)
 
 clean:
-	rm -f ush $(OUTF)
+	rm -f ush $(OUTF) *.c#
 
 # dependency list
 

@@ -5,6 +5,9 @@
  */
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include "defn.h"
 
    /* newsize default 1024 */
@@ -15,37 +18,53 @@
 
 int expand (char *orig, char *new, int newsize)
 {
-  int i = 1;
-  char envName[256];
+  int i = 0;
+  int j = 0;
+  char *rv;
   while ( orig[i] != 0 )
     {
+      printf("orig[%d]:%c\n",i,orig[i]);
       if ( orig[i] == '$' )
 	{
-	  i+=2;   /* Skip $ and { */
-	  int j = 0;
-	  while ( orig[i] != '}' ) /* get variable name */
+	  int envIndex = i;
+	  int j = i + 1; /* Start of environment name */
+	  while ( orig[j] != '}' ) /* get variable name */
 	    {
-	      if ( orig[i] == 0)
+	      if ( orig[j] == 0)
 		{
-		  fprintf(stderr, "No closing } found.");
-		  return NULL;
+		  fprintf(stderr, "No closing } found.\n");
+		  return -1;
 		}
-	      envName[j++] = orig[i++];
+	      /*
+	      if (orig[j] == '$')
+		{
+		  rv = getppid();
+		  break;
+		}
+	      */
+	      j++;
 	    }
-	  j = 0;
-	  char varVal = getenv( envName );  /* return env value */
-	  if ( strlen(varVal) > newsize )
+	  orig[j] = 0; /* Temp replace } with 0 */
+	  rv = getenv( &orig[j] );  /* return env value */
+	  if ( rv == 0 ) /* check if rv is NULL */
 	    {
-	      fprintf(stderr, "Out of bounds error.");
-	      return NULL;
+	      break;
 	    }
-	  while ( envName[j] != 0 ) /* copy value to new string */
+	  if ( (strlen(rv) + strlen(orig) ) > newsize )
 	    {
-	      new[i++] = envName[j++];
+	      fprintf(stderr, "Out of bounds error.\n");
+	      return -1;
+	    }
+	  printf("rv:%s\n", rv);
+	  orig[j] = '}'; /* Revert line to original */
+	  int a = 0;
+	  while ( rv[a] != 0 ) /* copy value to new string */
+	    {
+	      new[j++] = rv[a++];
 	    }
 	}
-      new[i] = orig[i];
-      i++;
+      new[j++] = orig[i++];
     }
+  printf("orig:%s\nnew:%s\n",orig,new);
   return 1;
 }

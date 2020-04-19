@@ -66,8 +66,8 @@ void processline(char *line)
   pid_t cpid;
   int status;
   
-  char newEx;
-  //expand(line, newEx, LINELEN);
+  char newLine[LINELEN];
+  expand(line, newLine, LINELEN);
   
   int argc;
   char **args = arg_parse(line, &argc);
