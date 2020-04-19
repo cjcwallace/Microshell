@@ -71,17 +71,32 @@ int expand (char *orig, char *new, int newsize)
 	      sprintf(rv, "%d", pid);
 	      //printf("pid:%d, rv: %s\n",pid, rv);
 	      j = replaceIndex;
+	      writeNew(new,rv,&j);
+	      /*
 	      while ( rv[a] != 0 )
 		{
 		  new[j++] = rv[a++];
 		  //printf("j:%d writing rv new:%s\n", j, new);
 		}
+	      */
 	      if ( orig[++i] == 0 ) break;
 	    }
 	  //printf("j:%d, i:%d, new:%s\n",j,i,new);
 	}
       //printf("j: %d\n", j);
       new[j++] = orig[i++];
+    }
+  return 1;
+}
+
+int writeNew (char *new, char *rv, int *j)
+{
+  int a = 0;
+  while ( rv[a] != 0 )
+    {
+      new[j] = rv[a++];
+      *j = *j + 1;
+      printf("j:%d\n", *j);
     }
   return 1;
 }
