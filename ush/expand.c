@@ -27,23 +27,25 @@ int expand (char *orig, char *new, int newsize)
       //printf("new[%d]:%s\n",j,new);
       if ( orig[i] == '$' )
 	{
-	  int replaceIndex = i;
-	  j = i + 1;
+	  int replaceIndex = j;
+	  printf("replacein:%d\n",replaceIndex);
+	  //j = i + 1;
+	  i++;
 	  int a = 0;
-	  if ( orig[j] == '{' ) /* Start of environment name */ 
+	  if ( orig[i] == '{' ) /* Start of environment name */ 
 	    {
-	      int envIndex = j + 1;
-	      while ( orig[j] != '}' ) /* get variable name */
+	      int envIndex = i + 1;
+	      while ( orig[i] != '}' ) /* get variable name */
 		{
-		  if ( orig[j] == 0)
+		  if ( orig[i] == 0)
 		    {
 		      fprintf(stderr, "No closing } found.\n");
 		      return -1;
 		    }
-		  j++;
+		  i++;
 		}
-	      i = j + 1;
-	      orig[j] = 0; /* Temp replace } with 0 */
+	      //i = j + 1;
+	      orig[i] = 0; /* Temp replace } with 0 */
 	      rv = getenv( &orig[envIndex] );  /* return env value */
 	      if ( rv == 0 ) /* check if rv is NULL */
                 {
@@ -56,20 +58,20 @@ int expand (char *orig, char *new, int newsize)
 		  return -1;
     	        }
 	      //printf("rv:%s\n", rv);
-	      orig[j] = '}'; /* Revert line to original */
+	      orig[i++] = '}'; /* Revert line to original */
 	      j = replaceIndex;
 	      while ( rv[a] != 0 ) /* copy value to new string */
 		{
 		  new[j++] = rv[a++];
-		  //printf("j:%d, writing rv new:%s\n", j, new);
+		  printf("j:%d, writing rv new:%s\n", j, new);
 		}
 	      if ( orig[i+1] == 0 ) break;
     	    }
-	  if (orig[j] == '$' ) /* ppid */
+	  if (orig[i] == '$' ) /* ppid */
 	    {
-	      i = j + 1;
+	      //i = j + 1;
 	      int pid = getppid();
-	      //rv = malloc(6);
+	      rv = (char*)  malloc(6);
 	      sprintf(rv, "%d", pid);
 	      //printf("pid:%d, rv: %s\n",pid, rv);
 	      j = replaceIndex;
@@ -78,11 +80,13 @@ int expand (char *orig, char *new, int newsize)
 		  new[j++] = rv[a++];
 		  //printf("j:%d writing rv new:%s\n", j, new);
 		}
+	      if ( orig[++i] == 0 ) break;
 	    }
+	  printf("j:%d, i:%d, new:%s\n",j,i,new);
 	}
       //printf("j: %d\n", j);
       new[j++] = orig[i++];
     }
-  //printf("orig:%s\nnew:%s\n",orig,new);
+  printf("orig:%s\nnew:%s\n",orig,new);
   return 1;
 }
