@@ -28,7 +28,7 @@ int expand (char *orig, char *new, int newsize)
       if ( orig[i] == '$' )
 	{
 	  int replaceIndex = i;
-	  int j = i + 1;
+	  j = i + 1;
 	  if ( orig[j] == '{' ) /* Start of environment name */ 
 	    {
 	      int envIndex = j + 1;
@@ -41,7 +41,7 @@ int expand (char *orig, char *new, int newsize)
 		    }
 		  j++;
 		}
-	      i = j;
+	      i = j + 1;
 	      orig[j] = 0; /* Temp replace } with 0 */
 	      rv = getenv( &orig[envIndex] );  /* return env value */
 	      if ( rv == 0 ) /* check if rv is NULL */
@@ -61,7 +61,7 @@ int expand (char *orig, char *new, int newsize)
 	      while ( rv[a] != 0 ) /* copy value to new string */
 		{
 		  new[j++] = rv[a++];
-		  printf("writing rv new:%s\n", new);
+		  printf("j:%d, writing rv new:%s\n", j, new);
 		}
 	      if ( orig[i+1] == 0 ) break;
     	    }
@@ -69,8 +69,8 @@ int expand (char *orig, char *new, int newsize)
 	    {
 	      pid_t parentID = getppid();
 	    }
-	  
 	}
+      printf("j: %d\n", j);
       new[j++] = orig[i++];
     }
   printf("orig:%s\nnew:%s\n",orig,new);
