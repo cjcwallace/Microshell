@@ -23,8 +23,8 @@ int expand (char *orig, char *new, int newsize)
   char *rv;
   while ( orig[i] != 0 )
     {
-      printf("orig[%d]:%s\n",i,orig);
-      printf("new[%d]:%s\n",j,new);
+      //printf("orig[%d]:%s\n",i,orig);
+      //printf("new[%d]:%s\n",j,new);
       if ( orig[i] == '$' )
 	{
 	  int replaceIndex = i;
@@ -54,14 +54,14 @@ int expand (char *orig, char *new, int newsize)
 		  fprintf(stderr, "Out of bounds error.\n");
 		  return -1;
     	        }
-	      printf("rv:%s\n", rv);
+	      //printf("rv:%s\n", rv);
 	      orig[j] = '}'; /* Revert line to original */
 	      int a = 0;
 	      j = replaceIndex;
 	      while ( rv[a] != 0 ) /* copy value to new string */
 		{
 		  new[j++] = rv[a++];
-		  printf("j:%d, writing rv new:%s\n", j, new);
+		  //printf("j:%d, writing rv new:%s\n", j, new);
 		}
 	      if ( orig[i+1] == 0 ) break;
     	    }
@@ -70,9 +70,9 @@ int expand (char *orig, char *new, int newsize)
 	      pid_t parentID = getppid();
 	    }
 	}
-      printf("j: %d\n", j);
+      //printf("j: %d\n", j);
       new[j++] = orig[i++];
     }
-  printf("orig:%s\nnew:%s\n",orig,new);
+  //printf("orig:%s\nnew:%s\n",orig,new);
   return 1;
 }
