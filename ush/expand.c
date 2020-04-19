@@ -28,8 +28,7 @@ int expand (char *orig, char *new, int newsize)
       if ( orig[i] == '$' )
 	{
 	  int replaceIndex = j;
-	  printf("replacein:%d\n",replaceIndex);
-	  //j = i + 1;
+	  //printf("replacein:%d\n",replaceIndex);
 	  i++;
 	  int a = 0;
 	  if ( orig[i] == '{' ) /* Start of environment name */ 
@@ -44,7 +43,6 @@ int expand (char *orig, char *new, int newsize)
 		    }
 		  i++;
 		}
-	      //i = j + 1;
 	      orig[i] = 0; /* Temp replace } with 0 */
 	      rv = getenv( &orig[envIndex] );  /* return env value */
 	      if ( rv == 0 ) /* check if rv is NULL */
@@ -57,19 +55,17 @@ int expand (char *orig, char *new, int newsize)
 		  fprintf(stderr, "Out of bounds error.\n");
 		  return -1;
     	        }
-	      //printf("rv:%s\n", rv);
 	      orig[i++] = '}'; /* Revert line to original */
 	      j = replaceIndex;
 	      while ( rv[a] != 0 ) /* copy value to new string */
 		{
 		  new[j++] = rv[a++];
-		  printf("j:%d, writing rv new:%s\n", j, new);
+		  //printf("j:%d, writing rv new:%s\n", j, new);
 		}
 	      if ( orig[i+1] == 0 ) break;
     	    }
 	  if (orig[i] == '$' ) /* ppid */
 	    {
-	      //i = j + 1;
 	      int pid = getppid();
 	      rv = (char*)  malloc(6);
 	      sprintf(rv, "%d", pid);
@@ -82,11 +78,10 @@ int expand (char *orig, char *new, int newsize)
 		}
 	      if ( orig[++i] == 0 ) break;
 	    }
-	  printf("j:%d, i:%d, new:%s\n",j,i,new);
+	  //printf("j:%d, i:%d, new:%s\n",j,i,new);
 	}
       //printf("j: %d\n", j);
       new[j++] = orig[i++];
     }
-  printf("orig:%s\nnew:%s\n",orig,new);
   return 1;
 }
