@@ -27,22 +27,22 @@ int expand (char *orig, char *new, int newsize)
       if ( orig[i] == '$' )
 	{
 	  int envIndex = i;
-	  int j = i + 1; /* Start of environment name */
-	  while ( orig[j] != '}' ) /* get variable name */
+	  int j = i + 1;
+	  if ( orig[j] == '{' ) /* Start of environment name */ 
 	    {
-	      if ( orig[j] == 0)
+	      while ( orig[j] != '}' ) /* get variable name */
 		{
-		  fprintf(stderr, "No closing } found.\n");
-		  return -1;
+		  if ( orig[j] == 0)
+		    {
+		      fprintf(stderr, "No closing } found.\n");
+		      return -1;
+		    }
+		  j++;
 		}
-	      /*
-	      if (orig[j] == '$')
-		{
-		  rv = getppid();
-		  break;
-		}
-	      */
-	      j++;
+	    }
+	  if (orig[j] == '$' ) /* ppid */
+	    {
+	      rv = getppid();
 	    }
 	  orig[j] = 0; /* Temp replace } with 0 */
 	  rv = getenv( &orig[j] );  /* return env value */
@@ -58,6 +58,7 @@ int expand (char *orig, char *new, int newsize)
 	  printf("rv:%s\n", rv);
 	  orig[j] = '}'; /* Revert line to original */
 	  int a = 0;
+	  j = envIndex;
 	  while ( rv[a] != 0 ) /* copy value to new string */
 	    {
 	      new[j++] = rv[a++];
