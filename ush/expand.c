@@ -57,11 +57,14 @@ int expand (char *orig, char *new, int newsize)
     	        }
 	      orig[i++] = '}'; /* Revert line to original */
 	      j = replaceIndex;
-	      while ( rv[a] != 0 ) /* copy value to new string */
+	      writeNew( new, rv, &j );
+	      /*
+	      while ( rv[a] != 0 ) /* copy value to new string 
 		{
 		  new[j++] = rv[a++];
 		  //printf("j:%d, writing rv new:%s\n", j, new);
 		}
+	      */
 	      if ( orig[i+1] == 0 ) break;
     	    }
 	  if (orig[i] == '$' ) /* ppid */
@@ -71,7 +74,7 @@ int expand (char *orig, char *new, int newsize)
 	      sprintf(rv, "%d", pid);
 	      //printf("pid:%d, rv: %s\n",pid, rv);
 	      j = replaceIndex;
-	      writeNew(new,rv,&j);
+	      writeNew( new, rv, &j );
 	      /*
 	      while ( rv[a] != 0 )
 		{
@@ -94,7 +97,7 @@ int writeNew (char *new, char *rv, int *j)
   int a = 0;
   while ( rv[a] != 0 )
     {
-      new[j] = rv[a++];
+      new[*j] = rv[a++];
       *j = *j + 1;
       printf("j:%d\n", *j);
     }
