@@ -30,6 +30,11 @@ int expand (char *orig, char *new, int newsize)
 	  int replaceIndex = j;
 	  //printf("replacein:%d\n",replaceIndex);
 	  i++;
+	  if (orig[i] == ' ')
+	    {
+	      i--;;
+	      break;
+	    }
 	  if ( orig[i] == '{' ) /* Start of environment name */ 
 	    {
 	      int envIndex = i + 1;
@@ -62,7 +67,7 @@ int expand (char *orig, char *new, int newsize)
 	    }
 	  if (orig[i] == '$' ) /* ppid */
 	    {
-	      int pid = getppid();
+	      int pid = getpid();
 	      rv = (char*)  malloc(6);
 	      sprintf(rv, "%d", pid);
 	      //printf("pid:%d, rv: %s\n",pid, rv);
@@ -86,7 +91,6 @@ int writeNew (char *new, char *rv, int *j)
     {
       new[*j] = rv[a++];
       *j = *j + 1;
-      printf("j:%d\n", *j);
     }
   return 1;
 }
