@@ -32,7 +32,7 @@ int expand (char *orig, char *new, int newsize)
 	  i++;
 	  if (orig[i] == ' ')
 	    {
-	      i--;;
+	      i--;
 	      break;
 	    }
 	  if ( orig[i] == '{' ) /* Start of environment name */ 
@@ -76,8 +76,15 @@ int expand (char *orig, char *new, int newsize)
 	      if ( orig[++i] == 0 ) break;
 	      if ( orig[i] == '$' ) continue;
 	    }
+	  else
+	    {
+	      i--;
+	      new[j++] = orig[i++];
+	     
+	    }
 	  //printf("j:%d, i:%d, new:%s\n",j,i,new);
 	}
+      printf("j:%d, i:%d, new:%s\n",j,i,new);
       //printf("j: %d\n", j);
       new[j++] = orig[i++];
     }
