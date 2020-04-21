@@ -72,6 +72,9 @@ void processline(char *line)
   
   int argc;
   char **args = arg_parse(newLine, &argc);
+
+  if (args == NULL) return;
+
   int bi = builtIn(args, &argc);
   if ( bi != 0 )
     {

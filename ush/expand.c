@@ -51,12 +51,12 @@ int expand (char *orig, char *new, int newsize)
 	      rv = getenv( &orig[envIndex] );  /* return env value */
 	      if ( rv == 0 ) /* check if rv is NULL */
                 {
-		  printf("rv is null.\n");
-		  break;          
+		  //printf("rv is null.");
+		  return -1;          
                 }
 	      if ( (strlen(rv) + strlen(orig) ) > newsize )
     	        {
-		  fprintf(stderr, "Out of bounds error.\n");
+		  fprintf(stderr, "Out of bounds error.");
 		  return -1;
     	        }
 	      orig[i++] = '}'; /* Revert line to original */
