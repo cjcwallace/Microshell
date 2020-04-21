@@ -67,7 +67,7 @@ int expand (char *orig, char *new, int newsize)
 	    }
 	  if (orig[i] == '$' ) /* ppid */
 	    {
-	      int pid = getpid();
+	      int pid = getppid();
 	      rv = (char*)  malloc(6);
 	      sprintf(rv, "%d", pid);
 	      //printf("pid:%d, rv: %s\n",pid, rv);

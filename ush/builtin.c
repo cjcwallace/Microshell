@@ -17,7 +17,7 @@ void bi_exit( char **args, int *argc )
     {
       exit(0);
     }
-  if ( *argc == 2 )
+  if ( *argc > 1 )
     {
       exit(atoi(args[1]));
     }
