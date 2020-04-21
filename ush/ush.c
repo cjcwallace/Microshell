@@ -67,38 +67,42 @@ void processline(char *line)
   int status;
   
   char newLine[LINELEN];
+  memset(newLine, 0, LINELEN);
   expand(line, newLine, LINELEN);
   
   int argc;
-  char **args = arg_parse(line, &argc);
+  char **args = arg_parse(newLine, &argc);
+  int bi = builtIn(args, &argc);
+  if ( bi != 0 )
+    {
+      /* Start a new process to do the job. */
+      cpid = fork();
+      if (cpid < 0 )
+	{
+	  /* Fork wasn't successful */
+	  perror("fork");
+	  return;
+	}
 
-  /* Start a new process to do the job. */
-  cpid = fork();
-  if (cpid < 0)
-  {
-    /* Fork wasn't successful */
-    perror("fork");
-    return;
-  }
-
-  /* Check for who we are! */
-  if (cpid == 0)
-  {
-    /* We are the child! */
-    execvp(*args, args);
-    /* execlp reurned, wasn't successful */
-    perror("exec");
-    fclose(stdin); // avoid a linux stdio bug
-    exit(127);
-  }
-
-  /* Have the parent wait for child to complete */
-  if (wait(&status) < 0)
-  {
-    free(args);
-    /* Wait wasn't successful */
-    perror("wait");
-  }
+      /* Check for who we are! */
+      if (cpid == 0)
+	{
+	  /* We are the child! */
+	  execvp(*args, args);
+	  /* execlp reurned, wasn't successful */
+	  perror("exec");
+	  fclose(stdin); // avoid a linux stdio bug
+	  exit(127);
+	}
+      /* Have the parent wait for child to complete */
+      if (wait(&status) < 0)
+	{
+	  free(args);
+	  /* Wait wasn't successful */
+	  perror("wait");
+	}
+    }
+  free(args);
 }
 
 char **arg_parse(char *line, int *argcptr)

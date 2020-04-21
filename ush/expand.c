@@ -42,7 +42,7 @@ int expand (char *orig, char *new, int newsize)
 		{
 		  if ( orig[i] == 0)
 		    {
-		      fprintf(stderr, "No closing } found.\n");
+		      fprintf(stderr, "ush: no matching }");
 		      return -1;
 		    }
 		  i++;
