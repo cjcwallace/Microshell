@@ -7,3 +7,5 @@
 /* Prototype */
 
 int expand (char *orig, char *new, int newsize);
+int writeNew  (char *new, char *rv, int *j);
+int builtIn (char **args, int *argc);
