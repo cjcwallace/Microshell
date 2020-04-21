@@ -84,7 +84,7 @@ int expand (char *orig, char *new, int newsize)
 	    }
 	  //printf("j:%d, i:%d, new:%s\n",j,i,new);
 	}
-      printf("j:%d, i:%d, new:%s\n",j,i,new);
+      //printf("j:%d, i:%d, new:%s\n",j,i,new);
       //printf("j: %d\n", j);
       new[j++] = orig[i++];
     }
