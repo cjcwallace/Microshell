@@ -35,7 +35,7 @@ int expand (char *orig, char *new, int newsize)
 	      i--;
 	      break;
 	    }
-	  if ( orig[i] == '{' ) /* Start of environment name */ 
+	  else if ( orig[i] == '{' ) /* Start of environment name */ 
 	    {
 	      int envIndex = i + 1;
 	      while ( orig[i] != '}' ) /* get variable name */
@@ -54,7 +54,7 @@ int expand (char *orig, char *new, int newsize)
 		  //printf("rv is null.");
 		  return -1;          
                 }
-	      if ( (strlen(rv) + strlen(orig) ) > newsize )
+	      else if ( (strlen(rv) + strlen(orig) ) > newsize )
     	        {
 		  fprintf(stderr, "Out of bounds error.");
 		  return -1;
@@ -65,7 +65,7 @@ int expand (char *orig, char *new, int newsize)
 	      if ( orig[i] == 0 ) break;
 	      if ( orig[i] == '$') continue;
 	    }
-	  if (orig[i] == '$' ) /* ppid */
+	  else if (orig[i] == '$' ) /* ppid */
 	    {
 	      int pid = getppid();
 	      rv = (char*)  malloc(6);
@@ -79,8 +79,6 @@ int expand (char *orig, char *new, int newsize)
 	  else
 	    {
 	      i--;
-	      new[j++] = orig[i++];
-	     
 	    }
 	  //printf("j:%d, i:%d, new:%s\n",j,i,new);
 	}
