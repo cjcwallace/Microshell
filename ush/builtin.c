@@ -71,7 +71,7 @@ void bi_cd(char **args, int *argc )
 	  perror("cd");
 	  return;
 	}
-      chdir(getenv("HOME"));
+      //chdir(getenv("HOME"));
     }
   if ( *argc == 2 )
     {
@@ -80,7 +80,7 @@ void bi_cd(char **args, int *argc )
 	  perror("cd");
 	  return;
 	}
-      chdir(args[1]);
+      //chdir(args[1]);
     }
 }
 
