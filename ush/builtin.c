@@ -35,10 +35,6 @@ void bi_envset( char **args, int *argc )
       perror("envset");
       return;
     }
-  if ( setenv(args[1], args[2], 1) == 0 )
-    {
-      setenv(args[1], args[2], 1);
-    }
 }
 
 void bi_envunset( char **args, int *argc )
@@ -51,10 +47,6 @@ void bi_envunset( char **args, int *argc )
     {
       perror("unsetenv");
       return;
-    }
-  if ( unsetenv(args[1]) == 0 )
-    {
-      unsetenv(args[1]);
     }
 }
 
