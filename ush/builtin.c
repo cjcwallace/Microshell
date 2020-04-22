@@ -13,6 +13,7 @@
 
 void bi_exit( char **args, int *argc )
 {
+
   if ( *argc == 1 )
     {
       exit(0);
