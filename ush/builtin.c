@@ -33,7 +33,7 @@ void bi_envset( char **args, int *argc )
   if ( setenv(args[1], args[2], 1) != 0 )
     {
       perror("envset");
-      //return -1;
+      return;
     }
   if ( setenv(args[1], args[2], 1) == 0 )
     {
@@ -50,7 +50,7 @@ void bi_envunset( char **args, int *argc )
   if ( unsetenv(args[1]) != 0 )
     {
       perror("unsetenv");
-      //return -1;
+      return;
     }
   if ( unsetenv(args[1]) == 0 )
     {
@@ -69,6 +69,7 @@ void bi_cd(char **args, int *argc )
       if ( chdir(getenv("HOME")) != 0)
 	{	 
 	  perror("cd");
+	  return;
 	}
       chdir(getenv("HOME"));
     }
@@ -77,6 +78,7 @@ void bi_cd(char **args, int *argc )
       if ( chdir(args[1]) != 0 )
 	{
 	  perror("cd");
+	  return;
 	}
       chdir(args[1]);
     }
