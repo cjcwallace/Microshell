@@ -67,7 +67,7 @@ void processline(char *line)
   int status;
   
   char newLine[LINELEN];
-  memset(newLine, 0, LINELEN);
+  //memset(newLine, 0, LINELEN);
   expand(line, newLine, LINELEN);
   
   int argc;
@@ -86,13 +86,13 @@ void processline(char *line)
 	  perror("fork");
 	  return;
 	}
-
+      
       /* Check for who we are! */
       if (cpid == 0)
 	{
 	  /* We are the child! */
 	  execvp(*args, args);
-	  /* execlp reurned, wasn't successful */
+	   /* execlp reurned, wasn't successful */
 	  perror("exec");
 	  fclose(stdin); // avoid a linux stdio bug
 	  exit(127);
@@ -106,6 +106,8 @@ void processline(char *line)
 	}
     }
   free(args);
+  //newLine[0] = '0';
+  memset(newLine, 0, LINELEN);
 }
 
 char **arg_parse(char *line, int *argcptr)

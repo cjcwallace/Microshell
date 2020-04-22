@@ -30,12 +30,13 @@ int expand (char *orig, char *new, int newsize)
 	  int replaceIndex = j;
 	  //printf("replacein:%d\n",replaceIndex);
 	  i++;
+	  /*
 	  if (orig[i] == ' ')
 	    {
 	      i--;
 	      break;
-	    }
-	  else if ( orig[i] == '{' ) /* Start of environment name */ 
+	    }*/
+	  if ( orig[i] == '{' ) /* Start of environment name */ 
 	    {
 	      int envIndex = i + 1;
 	      while ( orig[i] != '}' ) /* get variable name */
@@ -61,11 +62,12 @@ int expand (char *orig, char *new, int newsize)
 		  j = replaceIndex;
 		  writeNew( new, rv, &j );
 		}
+	      /*
 	      else if ( rv == 0)
 		{
-		  //printf("orig:%s, new:%s, i:%d, j:%d\n", orig, new, i, j);
-		  i++; 
-		}
+		  j = replaceIndex;
+		  //printf("orig:%s, new:%s, i:%d, j:%d\n", orig, new, i, j);		  
+		}*/
 	      if ( orig[i] == 0 ) break;
 	      if ( orig[i] == '$') continue;
 	    }
@@ -90,6 +92,7 @@ int expand (char *orig, char *new, int newsize)
       //printf("j: %d\n", j);
       new[j++] = orig[i++];
     }
+  printf("orig:%s, new:%s, i:%d, j:%d\n", orig,new,i,j);
   return 0;
 }
 
@@ -101,5 +104,5 @@ int writeNew (char *new, char *rv, int *j)
       new[*j] = rv[a++];
       *j = *j + 1;
     }
-  return 1;
+  return 0;
 }
