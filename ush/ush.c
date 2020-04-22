@@ -194,7 +194,11 @@ char **arg_parse(char *line, int *argcptr)
       argarr[ac++] = &line[dest]; // assign pointer to start of arg
       while (line[i] != ' ') // loop until we hit a space
       {
-        if (line[i] == '\"') // find start quote
+	if (line[i] == 0)
+	  {
+	    break;
+	  }
+	if (line[i] == '\"') // find start quote
         {
           i++; // get i off quote
           while (line[i] != 0 && line[i] != '\"') // loop until eos or quote
