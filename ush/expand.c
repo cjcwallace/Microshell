@@ -87,7 +87,7 @@ int expand (char *orig, char *new, int newsize)
 	}
       //printf("j:%d, i:%d, new:%s\n",j,i,new);
       //printf("j: %d\n", j);
-      if ( j > newsize - 1 || i > newsize - 1 )
+      if ( j >= newsize )//|| i >= newsize )
 	{
 	  fprintf(stderr, "buffer overflow\n");
 	  return -1;
