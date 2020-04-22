@@ -87,7 +87,6 @@ int builtIn (char **args, int *argc)
     {
       if ( strcmp(args[0], commands[i]) == 0 )
 	{
-	  //printf("command %s found\n", commands[i]);
 	  cmd[i]( args, argc);
 	  return 0;
 	}

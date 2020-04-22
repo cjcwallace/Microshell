@@ -25,7 +25,7 @@ int expand (char *orig, char *new, int newsize)
     {
       if ( orig[i] == '$' )
 	{
-	  int replaceIndex = j;
+	  //int replaceIndex = j;
 	  i++;
 	  if ( orig[i] == '{' ) /* Start of environment name */ 
 	    {
@@ -50,10 +50,10 @@ int expand (char *orig, char *new, int newsize)
 		      return -1;
 		    }
 		  //orig[i++] = '}'; /* Revert line to original */
-		  j = replaceIndex;
+		  //j = replaceIndex;
 		  if ( writeNew( new, rv, &j, newsize ) == -1 )
 		    {
-		      return -1;
+		      return -1; // Write failed, presumably from overflow
 		    }
 		}
 	      if ( orig[i] == 0 )
@@ -61,7 +61,7 @@ int expand (char *orig, char *new, int newsize)
 		  new[j] = 0;
 		  break;
 		}
-	      if ( orig[i] == '$') continue;
+	      if ( orig[i] == '$') continue; /* 2 args next to eachother */
 	    }
 	  else if (orig[i] == '$' ) /* ppid */
 	    {
@@ -71,9 +71,8 @@ int expand (char *orig, char *new, int newsize)
 		  fprintf(stderr, "pid not found\n");
 		  return -1;
 		}
-	      
 	      //printf("pid:%d, rv: %s\n",pid, rv);
-	      j = replaceIndex;
+	      //j = replaceIndex;
 	      if ( writeNew( new, pidstring, &j, newsize ) == -1 )
 		{
 		  return -1;
@@ -83,7 +82,7 @@ int expand (char *orig, char *new, int newsize)
 		  new[j] = 0;
 		  break;
 		}
-	      if ( orig[i] == '$' ) continue;
+	      if ( orig[i] == '$' ) continue; /* 2 args next to eachother */
 	    }
 	  else
 	    {

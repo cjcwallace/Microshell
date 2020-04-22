@@ -67,11 +67,9 @@ void processline(char *line)
   int status;
   
   char newLine[LINELEN];
-  //memset(newLine, 0, LINELEN);
   int success = expand(line, newLine, LINELEN);
   if( success == -1 )
     {
-      //newLine[0] = (char*)
       memset(newLine, 0, LINELEN);
       return;
     }
@@ -112,10 +110,7 @@ void processline(char *line)
 	}
     }
   free(args);
-  //newLine[0] = '0';
-  //printf("newline:%s\n", newLine);
-  //newLine = (char*)
-    memset(newLine, 0, LINELEN);
+  memset(newLine, 0, LINELEN);
 }
 
 char **arg_parse(char *line, int *argcptr)
