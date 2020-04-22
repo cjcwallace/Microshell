@@ -91,8 +91,7 @@ int builtIn (char **args, int *argc)
 {
   const int size = 4;
   const char *commands[] = { "exit", "envset", "envunset", "cd" };
-  //bicommands cmd[] = { &bi_exit, &bi_enset, &bi_envunset, &bi_cd };
-  
+    
   for ( int i = 0; i < size; i++ )
     {
       if ( strcmp(args[0], commands[i]) == 0 )
