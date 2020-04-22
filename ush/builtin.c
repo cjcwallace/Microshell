@@ -27,11 +27,13 @@ void bi_envset( char **args, int *argc )
 {
   if ( *argc != 3 )
     {
-      fprintf(stderr, "usage: envset name value");
+      fprintf(stderr, "usage: envset name value\n");
+      //return -1;
     }
   if ( setenv(args[1], args[2], 1) != 0 )
     {
       perror("envset");
+      //return -1;
     }
   if ( setenv(args[1], args[2], 1) == 0 )
     {
@@ -43,11 +45,12 @@ void bi_envunset( char **args, int *argc )
 {
   if ( *argc != 2 )
     {
-      fprintf(stderr, "usage: envunset name");
+      fprintf(stderr, "usage: envunset name\n");
     }
   if ( unsetenv(args[1]) != 0 )
     {
       perror("unsetenv");
+      //return -1;
     }
   if ( unsetenv(args[1]) == 0 )
     {
@@ -59,7 +62,7 @@ void bi_cd(char **args, int *argc )
 {
   if ( *argc > 2 )
     {
-      fprintf(stderr, "useage: cd [directory]");
+      fprintf(stderr, "useage: cd [directory]\n");
     }
   if ( *argc == 1 )
     {
@@ -67,6 +70,7 @@ void bi_cd(char **args, int *argc )
 	{
 	  //int errnum = errno;
 	  perror("cd");
+	  //return -1;
 	}
       chdir(getenv("HOME"));
     }
@@ -75,9 +79,11 @@ void bi_cd(char **args, int *argc )
       if ( chdir(args[1]) != 0 )
 	{
 	  perror("cd");
+	  //return -1;
 	}
       chdir(args[1]);
     }
+  //return 0;
 }
 
 typedef void (*bicommands) ();

@@ -76,7 +76,7 @@ int expand (char *orig, char *new, int newsize)
 	}
       //printf("j:%d, i:%d, new:%s\n",j,i,new);
       //printf("j: %d\n", j);
-      if ( j >= newsize )//|| i >= newsize )
+      if ( j >= newsize )
 	{
 	  fprintf(stderr, "buffer overflow\n");
 	  return -1;
