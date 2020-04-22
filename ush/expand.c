@@ -18,14 +18,13 @@
 
 int expand (char *orig, char *new, int newsize)
 {
-  int i = 0;
-  int j = 0;
-  char *rv;
+  int i = 0; /* orig pointer */
+  int j = 0; /* new pointer */
+  char *rv;  /* holds variables from ${name} */
   while ( orig[i] != 0 )
     {
       if ( orig[i] == '$' )
 	{
-	  //int replaceIndex = j;
 	  i++;
 	  if ( orig[i] == '{' ) /* Start of environment name */ 
 	    {
@@ -49,8 +48,6 @@ int expand (char *orig, char *new, int newsize)
 		      fprintf(stderr, "out of bounds error\n");
 		      return -1;
 		    }
-		  //orig[i++] = '}'; /* Revert line to original */
-		  //j = replaceIndex;
 		  if ( writeNew( new, rv, &j, newsize ) == -1 )
 		    {
 		      return -1; // Write failed, presumably from overflow
@@ -71,11 +68,9 @@ int expand (char *orig, char *new, int newsize)
 		  fprintf(stderr, "pid not found\n");
 		  return -1;
 		}
-	      //printf("pid:%d, rv: %s\n",pid, rv);
-	      //j = replaceIndex;
 	      if ( writeNew( new, pidstring, &j, newsize ) == -1 )
 		{
-		  return -1;
+		  return -1; // Write failed
 		}
 	      if ( orig[++i] == 0 )
 		{
@@ -88,18 +83,14 @@ int expand (char *orig, char *new, int newsize)
 	    {
 	      i--;
 	    }
-	  //printf("j:%d, i:%d, new:%s\n",j,i,new);
 	}
-      //printf("j:%d, i:%d, new:%s\n",j,i,new);
-      //printf("j: %d\n", j);
-      if ( j >= newsize )
+      if ( j >= newsize ) /* Check to ensure we still have space */
 	{
 	  fprintf(stderr, "buffer overflow\n");
 	  return -1;
 	}
       new[j++] = orig[i++];
     }
-  //printf("orig:%s, new:%s, i:%d, j:%d\n", orig,new,i,j);
   return 0;
 }
 

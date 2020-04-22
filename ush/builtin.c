@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include "defn.h"
 
+/* Exit */
 void bi_exit( char **args, int *argc )
 {
 
@@ -24,6 +25,7 @@ void bi_exit( char **args, int *argc )
     }
 }
 
+/* Set environment variables */
 void bi_envset( char **args, int *argc )
 {
   if ( *argc != 3 )
@@ -38,6 +40,7 @@ void bi_envset( char **args, int *argc )
     }
 }
 
+/* Unset environment variables */
 void bi_envunset( char **args, int *argc )
 {
   if ( *argc != 2 )
@@ -51,6 +54,7 @@ void bi_envunset( char **args, int *argc )
     }
 }
 
+/* cd Functionality */
 void bi_cd(char **args, int *argc )
 {
   if ( *argc > 2 )
@@ -76,6 +80,7 @@ void bi_cd(char **args, int *argc )
 }
 
 typedef void (*bicommands) ();
+/* Store functions for built in commands */
 bicommands cmd[] = { &bi_exit, &bi_envset, &bi_envunset, &bi_cd };
 
 int builtIn (char **args, int *argc)
