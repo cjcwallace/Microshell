@@ -111,7 +111,7 @@ void processline(char *line)
     }
   free(args);
   //newLine[0] = '0';
-  memset(newLine, 0, LINELEN);
+  memset(newLine, 0, sizeof(newLine));
 }
 
 char **arg_parse(char *line, int *argcptr)

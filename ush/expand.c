@@ -23,12 +23,9 @@ int expand (char *orig, char *new, int newsize)
   char *rv;
   while ( orig[i] != 0 )
     {
-      //printf("orig[%d]:%s\n",i,orig);
-      //printf("new[%d]:%s\n",j,new);
       if ( orig[i] == '$' )
 	{
 	  int replaceIndex = j;
-	  //printf("replacein:%d\n",replaceIndex);
 	  i++;
 	  /*
 	  if (orig[i] == ' ')
@@ -43,7 +40,7 @@ int expand (char *orig, char *new, int newsize)
 		{
 		  if ( orig[i] == 0)
 		    {
-		      fprintf(stderr, "ush: no matching }");
+		      fprintf(stderr, "ush: no matching }\n");
 		      return -1;
 		    }
 		  i++;
@@ -53,9 +50,9 @@ int expand (char *orig, char *new, int newsize)
 	      orig[i++] = '}'; /* Revert line to original */
 	      if ( rv != 0 )
 		{
-		  if ( (strlen(rv) + strlen(orig) ) > newsize )
+		  if ( (strlen(rv) + strlen(orig) ) >= newsize )
 		    {
-		      fprintf(stderr, "Out of bounds error.");
+		      fprintf(stderr, "Out of bounds error\n");
 		      return -1;
 		    }
 		  //orig[i++] = '}'; /* Revert line to original */
@@ -90,6 +87,11 @@ int expand (char *orig, char *new, int newsize)
 	}
       //printf("j:%d, i:%d, new:%s\n",j,i,new);
       //printf("j: %d\n", j);
+      if ( j > newsize - 1 || i > newsize - 1 )
+	{
+	  fprintf(stderr, "buffer overflow\n");
+	  return -1;
+	}
       new[j++] = orig[i++];
     }
   //printf("orig:%s, new:%s, i:%d, j:%d\n", orig,new,i,j);
