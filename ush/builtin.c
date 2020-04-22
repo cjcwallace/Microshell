@@ -67,10 +67,8 @@ void bi_cd(char **args, int *argc )
   if ( *argc == 1 )
     {
       if ( chdir(getenv("HOME")) != 0)
-	{
-	  //int errnum = errno;
+	{	 
 	  perror("cd");
-	  //return -1;
 	}
       chdir(getenv("HOME"));
     }
@@ -79,11 +77,9 @@ void bi_cd(char **args, int *argc )
       if ( chdir(args[1]) != 0 )
 	{
 	  perror("cd");
-	  //return -1;
 	}
       chdir(args[1]);
     }
-  //return 0;
 }
 
 typedef void (*bicommands) ();

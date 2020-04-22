@@ -51,7 +51,10 @@ int expand (char *orig, char *new, int newsize)
 		    }
 		  //orig[i++] = '}'; /* Revert line to original */
 		  j = replaceIndex;
-		  writeNew( new, rv, &j );
+		  if ( writeNew( new, rv, &j, newsize ) == -1 )
+		    {
+		      return -1;
+		    }
 		}
 	      if ( orig[i] == 0 ) break;
 	      if ( orig[i] == '$') continue;
@@ -64,7 +67,10 @@ int expand (char *orig, char *new, int newsize)
 	      snprintf(pidstring, 21, "%d", getppid());
 	      //printf("pid:%d, rv: %s\n",pid, rv);
 	      j = replaceIndex;
-	      writeNew( new, pidstring, &j );
+	      if ( writeNew( new, pidstring, &j, newsize ) == -1 )
+		{
+		  return -1;
+		}
 	      if ( orig[++i] == 0 ) break;
 	      if ( orig[i] == '$' ) continue;
 	    }
@@ -87,11 +93,16 @@ int expand (char *orig, char *new, int newsize)
   return 0;
 }
 
-int writeNew (char *new, char *rv, int *j)
+int writeNew (char *new, char *rv, int *j, int newsize)
 {
   int a = 0;
   while ( rv[a] != 0 ) /* copy value to new string */
     {
+      if ( *j > newsize )
+	{
+	  fprintf(stderr, "buffer overflow\n");
+	  return -1;
+	}
       new[*j] = rv[a++];
       *j = *j + 1;
     }
