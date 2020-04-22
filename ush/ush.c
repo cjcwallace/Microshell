@@ -68,7 +68,11 @@ void processline(char *line)
   
   char newLine[LINELEN];
   //memset(newLine, 0, LINELEN);
-  expand(line, newLine, LINELEN);
+  if( expand(line, newLine, LINELEN) != 0 )
+    {
+      memset(newLine, 0, LINELEN);
+      return;
+    }
   
   int argc;
   char **args = arg_parse(newLine, &argc);
