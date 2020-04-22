@@ -56,22 +56,33 @@ int expand (char *orig, char *new, int newsize)
 		      return -1;
 		    }
 		}
-	      if ( orig[i] == 0 ) break;
+	      if ( orig[i] == 0 )
+		{
+		  new[j] = 0;
+		  break;
+		}
 	      if ( orig[i] == '$') continue;
 	    }
 	  else if (orig[i] == '$' ) /* ppid */
 	    {
-	      //pid_t pid = getppid();
-	      //rv = (char*)  malloc(6);
 	      char pidstring[21];
-	      snprintf(pidstring, 21, "%d", getppid());
+	      if ( snprintf(pidstring, 21, "%d", getpid()) < 1 )
+		{
+		  fprintf(stderr, "pid not found\n");
+		  return -1;
+		}
+	      
 	      //printf("pid:%d, rv: %s\n",pid, rv);
 	      j = replaceIndex;
 	      if ( writeNew( new, pidstring, &j, newsize ) == -1 )
 		{
 		  return -1;
 		}
-	      if ( orig[++i] == 0 ) break;
+	      if ( orig[++i] == 0 )
+		{
+		  new[j] = 0;
+		  break;
+		}
 	      if ( orig[i] == '$' ) continue;
 	    }
 	  else

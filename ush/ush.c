@@ -67,7 +67,7 @@ void processline(char *line)
   int status;
   
   char newLine[LINELEN];
-  memset(newLine, 0, LINELEN);
+  //memset(newLine, 0, LINELEN);
   int success = expand(line, newLine, LINELEN);
   if( success == -1 )
     {
