@@ -27,12 +27,6 @@ int expand (char *orig, char *new, int newsize)
 	{
 	  int replaceIndex = j;
 	  i++;
-	  /*
-	  if (orig[i] == ' ')
-	    {
-	      i--;
-	      break;
-	    }*/
 	  if ( orig[i] == '{' ) /* Start of environment name */ 
 	    {
 	      int envIndex = i + 1;
@@ -52,7 +46,7 @@ int expand (char *orig, char *new, int newsize)
 		{
 		  if ( (strlen(rv) + strlen(orig) ) >= newsize )
 		    {
-		      fprintf(stderr, "Out of bounds error\n");
+		      fprintf(stderr, "out of bounds error\n");
 		      return -1;
 		    }
 		  //orig[i++] = '}'; /* Revert line to original */
