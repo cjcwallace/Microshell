@@ -67,7 +67,7 @@ int expand (char *orig, char *new, int newsize)
 	      //pid_t pid = getppid();
 	      //rv = (char*)  malloc(6);
 	      char pidstring[32];
-	      snprintf(pidstring, 32, "%d", getpid());
+	      snprintf(pidstring, 32, "%d", getppid());
 	      //printf("pid:%d, rv: %s\n",pid, rv);
 	      j = replaceIndex;
 	      writeNew( new, pidstring, &j );
