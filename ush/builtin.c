@@ -29,7 +29,7 @@ void bi_envset( char **args, int *argc )
   if ( *argc != 3 )
     {
       fprintf(stderr, "usage: envset name value\n");
-      //return -1;
+      return;
     }
   if ( setenv(args[1], args[2], 1) != 0 )
     {
@@ -64,7 +64,6 @@ void bi_cd(char **args, int *argc )
 	  perror("cd");
 	  return;
 	}
-      //chdir(getenv("HOME"));
     }
   if ( *argc == 2 )
     {
@@ -73,7 +72,6 @@ void bi_cd(char **args, int *argc )
 	  perror("cd");
 	  return;
 	}
-      //chdir(args[1]);
     }
 }
 
