@@ -59,23 +59,18 @@ int expand (char *orig, char *new, int newsize)
 		  j = replaceIndex;
 		  writeNew( new, rv, &j );
 		}
-	      /*
-	      else if ( rv == 0)
-		{
-		  j = replaceIndex;
-		  //printf("orig:%s, new:%s, i:%d, j:%d\n", orig, new, i, j);		  
-		}*/
 	      if ( orig[i] == 0 ) break;
 	      if ( orig[i] == '$') continue;
 	    }
 	  else if (orig[i] == '$' ) /* ppid */
 	    {
-	      int pid = getppid();
-	      rv = (char*)  malloc(6);
-	      sprintf(rv, "%d", pid);
+	      //pid_t pid = getppid();
+	      //rv = (char*)  malloc(6);
+	      char pidstring[32];
+	      snprintf(pidstring, 32, "%d", getpid());
 	      //printf("pid:%d, rv: %s\n",pid, rv);
 	      j = replaceIndex;
-	      writeNew( new, rv, &j );
+	      writeNew( new, pidstring, &j );
 	      if ( orig[++i] == 0 ) break;
 	      if ( orig[i] == '$' ) continue;
 	    }
