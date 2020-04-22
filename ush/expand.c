@@ -49,19 +49,23 @@ int expand (char *orig, char *new, int newsize)
 		}
 	      orig[i] = 0; /* Temp replace } with 0 */
 	      rv = getenv( &orig[envIndex] );  /* return env value */
-	      if ( rv == 0 ) /* check if rv is NULL */
-                {
-		  //printf("rv is null.");
-		  return -1;          
-                }
-	      else if ( (strlen(rv) + strlen(orig) ) > newsize )
-    	        {
-		  fprintf(stderr, "Out of bounds error.");
-		  return -1;
-    	        }
 	      orig[i++] = '}'; /* Revert line to original */
-	      j = replaceIndex;
-	      writeNew( new, rv, &j );
+	      if ( rv != 0 )
+		{
+		  if ( (strlen(rv) + strlen(orig) ) > newsize )
+		    {
+		      fprintf(stderr, "Out of bounds error.");
+		      return -1;
+		    }
+		  //orig[i++] = '}'; /* Revert line to original */
+		  j = replaceIndex;
+		  writeNew( new, rv, &j );
+		}
+	      else if ( rv == 0)
+		{
+		  printf("orig:%s, new:%s, i:%d, j:%d\n", orig, new, i, j);
+		  i++; 
+		}
 	      if ( orig[i] == 0 ) break;
 	      if ( orig[i] == '$') continue;
 	    }
@@ -86,7 +90,7 @@ int expand (char *orig, char *new, int newsize)
       //printf("j: %d\n", j);
       new[j++] = orig[i++];
     }
-  return 1;
+  return 0;
 }
 
 int writeNew (char *new, char *rv, int *j)
