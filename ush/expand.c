@@ -63,7 +63,7 @@ int expand (char *orig, char *new, int newsize)
 		}
 	      else if ( rv == 0)
 		{
-		  printf("orig:%s, new:%s, i:%d, j:%d\n", orig, new, i, j);
+		  //printf("orig:%s, new:%s, i:%d, j:%d\n", orig, new, i, j);
 		  i++; 
 		}
 	      if ( orig[i] == 0 ) break;
