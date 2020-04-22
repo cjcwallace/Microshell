@@ -71,7 +71,8 @@ void processline(char *line)
   int success = expand(line, newLine, LINELEN);
   if( success == -1 )
     {
-      //newLine[0] = (char*) memset(newLine, 0, LINELEN);
+      //newLine[0] = (char*)
+      memset(newLine, 0, LINELEN);
       return;
     }
   
