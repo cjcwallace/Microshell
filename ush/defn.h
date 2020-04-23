@@ -1,7 +1,8 @@
 /*  Cameron Wallace
  *  April 15, 2020
  *  CSCI 347 Spring
- * Header file for ~~
+ *  Assignment 2
+ *  Header file for A2
  */
 
 /* Prototype */

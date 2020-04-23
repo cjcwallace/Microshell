@@ -1,6 +1,9 @@
-# Makefile used for ush
+# Cameron Wallace
+# April 14, 2020
 # CSCI 347 Spring 2020
-#
+# Assignment 2
+# Makefile used for ush
+
 CC=gcc
 CFLAGS=-g -Wall
 
