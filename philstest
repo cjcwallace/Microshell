@@ -1,0 +1,46 @@
+Script started on 2020-04-22 16:35:52-0700
+[16:35:52] wallac21@cf164-22:~/Documents/347/csci347_s20/A2Files$ echo BEGIN GARDING SCRIPT S[K[K[K[K[K[K[K[K[K[K[K[K[K[K[KRADING SCRIPT SCRIPT
+BEGIN GRADING SCRIPT SCRIPT
+[16:36:12] wallac21@cf164-22:~/Documents/347/csci347_s20/A2Files$ cd /home/phil/public/csci347/testa2
+[16:36:28] wallac21@cf164-22:/home/phil/public/csci347/testa2$ ./try
+Cloning into 'csci347_s20'...
+remote: Enumerating objects: 22, done.[K
+remote: Counting objects:   4% (1/22)[Kremote: Counting objects:   9% (2/22)[Kremote: Counting objects:  13% (3/22)[Kremote: Counting objects:  18% (4/22)[Kremote: Counting objects:  22% (5/22)[Kremote: Counting objects:  27% (6/22)[Kremote: Counting objects:  31% (7/22)[Kremote: Counting objects:  36% (8/22)[Kremote: Counting objects:  40% (9/22)[Kremote: Counting objects:  45% (10/22)[Kremote: Counting objects:  50% (11/22)[Kremote: Counting objects:  54% (12/22)[Kremote: Counting objects:  59% (13/22)[Kremote: Counting objects:  63% (14/22)[Kremote: Counting objects:  68% (15/22)[Kremote: Counting objects:  72% (16/22)[Kremote: Counting objects:  77% (17/22)[Kremote: Counting objects:  81% (18/22)[Kremote: Counting objects:  86% (19/22)[Kremote: Counting objects:  90% (20/22)[Kremote: Counting objects:  95% (21/22)[Kremote: Counting objects: 100% (22/22)[Kremote: Counting objects: 100% (22/22), done.[K
+remote: Compressing objects:   4% (1/22)[Kremote: Compressing objects:   9% (2/22)[Kremote: Compressing objects:  13% (3/22)[Kremote: Compressing objects:  18% (4/22)[Kremote: Compressing objects:  22% (5/22)[Kremote: Compressing objects:  27% (6/22)[Kremote: Compressing objects:  31% (7/22)[Kremote: Compressing objects:  36% (8/22)[Kremote: Compressing objects:  40% (9/22)[Kremote: Compressing objects:  45% (10/22)[Kremote: Compressing objects:  50% (11/22)[Kremote: Compressing objects:  54% (12/22)[Kremote: Compressing objects:  59% (13/22)[Kremote: Compressing objects:  63% (14/22)[Kremote: Compressing objects:  68% (15/22)[Kremote: Compressing objects:  72% (16/22)[Kremote: Compressing objects:  77% (17/22)[Kremote: Compressing objects:  81% (18/22)[Kremote: Compressing objects:  86% (19/22)[Kremote: Compressing objects:  90% (20/22)[Kremote: Compressing objects:  95% (21/22)[Kremote: Compressing objects: 100% (22/22)[Kremote: Compressing objects: 100% (22/22), done.[K
+Receiving objects:   0% (1/391)   Receiving objects:   1% (4/391)   Receiving objects:   2% (8/391)   Receiving objects:   3% (12/391)   Receiving objects:   4% (16/391)   Receiving objects:   5% (20/391)   Receiving objects:   6% (24/391)   Receiving objects:   7% (28/391)   Receiving objects:   8% (32/391)   Receiving objects:   9% (36/391)   Receiving objects:  10% (40/391)   Receiving objects:  11% (44/391)   Receiving objects:  12% (47/391)   Receiving objects:  13% (51/391)   Receiving objects:  14% (55/391)   Receiving objects:  15% (59/391)   Receiving objects:  16% (63/391)   Receiving objects:  17% (67/391)   Receiving objects:  18% (71/391)   Receiving objects:  19% (75/391)   Receiving objects:  20% (79/391)   Receiving objects:  21% (83/391)   Receiving objects:  22% (87/391)   Receiving objects:  23% (90/391)   Receiving objects:  24% (94/391)   Receiving objects:  25% (98/391)   Receiving objects:  26% (102/391)   Receiving objects:  27% (106/391)   Receiving objects:  28% (110/391)   Receiving objects:  29% (114/391)   Receiving objects:  30% (118/391)   Receiving objects:  31% (122/391)   Receiving objects:  32% (126/391)   Receiving objects:  33% (130/391)   Receiving objects:  34% (133/391)   Receiving objects:  35% (137/391)   Receiving objects:  36% (141/391)   Receiving objects:  37% (145/391)   Receiving objects:  38% (149/391)   Receiving objects:  39% (153/391)   Receiving objects:  40% (157/391)   Receiving objects:  41% (161/391)   Receiving objects:  42% (165/391)   Receiving objects:  43% (169/391)   Receiving objects:  44% (173/391)   Receiving objects:  45% (176/391)   Receiving objects:  46% (180/391)   Receiving objects:  47% (184/391)   Receiving objects:  48% (188/391)   Receiving objects:  49% (192/391)   Receiving objects:  50% (196/391)   Receiving objects:  51% (200/391)   Receiving objects:  52% (204/391)   Receiving objects:  53% (208/391)   Receiving objects:  54% (212/391)   Receiving objects:  55% (216/391)   remote: Total 391 (delta 12), reused 0 (delta 0), pack-reused 369[K
+Receiving objects:  56% (219/391)   Receiving objects:  57% (223/391)   Receiving objects:  58% (227/391)   Receiving objects:  59% (231/391)   Receiving objects:  60% (235/391)   Receiving objects:  61% (239/391)   Receiving objects:  62% (243/391)   Receiving objects:  63% (247/391)   Receiving objects:  64% (251/391)   Receiving objects:  65% (255/391)   Receiving objects:  66% (259/391)   Receiving objects:  67% (262/391)   Receiving objects:  68% (266/391)   Receiving objects:  69% (270/391)   Receiving objects:  70% (274/391)   Receiving objects:  71% (278/391)   Receiving objects:  72% (282/391)   Receiving objects:  73% (286/391)   Receiving objects:  74% (290/391)   Receiving objects:  75% (294/391)   Receiving objects:  76% (298/391)   Receiving objects:  77% (302/391)   Receiving objects:  78% (305/391)   Receiving objects:  79% (309/391)   Receiving objects:  80% (313/391)   Receiving objects:  81% (317/391)   Receiving objects:  82% (321/391)   Receiving objects:  83% (325/391)   Receiving objects:  84% (329/391)   Receiving objects:  85% (333/391)   Receiving objects:  86% (337/391)   Receiving objects:  87% (341/391)   Receiving objects:  88% (345/391)   Receiving objects:  89% (348/391)   Receiving objects:  90% (352/391)   Receiving objects:  91% (356/391)   Receiving objects:  92% (360/391)   Receiving objects:  93% (364/391)   Receiving objects:  94% (368/391)   Receiving objects:  95% (372/391)   Receiving objects:  96% (376/391)   Receiving objects:  97% (380/391)   Receiving objects:  98% (384/391)   Receiving objects:  99% (388/391)   Receiving objects: 100% (391/391)   Receiving objects: 100% (391/391), 163.30 KiB | 3.47 MiB/s, done.
+Resolving deltas:   0% (0/233)   Resolving deltas:  14% (34/233)   Resolving deltas:  15% (35/233)   Resolving deltas:  16% (39/233)   Resolving deltas:  31% (73/233)   Resolving deltas:  32% (75/233)   Resolving deltas:  34% (80/233)   Resolving deltas:  52% (122/233)   Resolving deltas:  69% (161/233)   Resolving deltas:  85% (200/233)   Resolving deltas:  88% (206/233)   Resolving deltas:  89% (209/233)   Resolving deltas:  92% (216/233)   Resolving deltas:  94% (221/233)   Resolving deltas:  96% (224/233)   Resolving deltas:  97% (227/233)   Resolving deltas:  99% (231/233)   Resolving deltas: 100% (233/233)   Resolving deltas: 100% (233/233), done.
+error: pathspec 'a2' did not match any file(s) known to git.
+Grading master branch.
+gcc -g -Wall   -c -o ush.o ush.c
+gcc -g -Wall   -c -o expand.o expand.c
+gcc -g -Wall   -c -o builtin.o builtin.c
+gcc  -o ush ush.o expand.o builtin.o
+
+Running ush
+
+Script output same
+Exit values correct
+
+----- ERRS -----
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+----------------
+
+Testing Errors
+% Test: Next line should have a missing } error
+% ush: no matching }
+% Test: Next two lines should be cd errors
+% cd: No such file or directory
+% cd: Bad address
+% Test: Next line should be an expansion overflow error
+% buffer overflow
+% Test: Error Testing Done
+% 
+Look at checked out files? n
+Clean? y
+cleaning
+removing ~/347_test_a2
+[16:36:38] wallac21@cf164-22:/home/phil/public/csci347/testa2$ exit
+exit
+
+Script done on 2020-04-22 16:36:44-0700
