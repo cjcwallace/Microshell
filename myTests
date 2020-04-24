@@ -1,0 +1,58 @@
+Script started on 2020-04-22 16:07:40-0700
+[16:07:40] wallac21@cf164-22:~/Documents/347/csci347_s20/ush$ make
+gcc -g -Wall   -c -o ush.o ush.c
+gcc -g -Wall   -c -o expand.o expand.c
+gcc -g -Wall   -c -o builtin.o builtin.c
+gcc  -o ush ush.o expand.o builtin.o
+[16:07:43] wallac21@cf164-22:~/Documents/347/csci347_s20/ush$ ./ush
+% ls
+builtin.c  builtin.o  defn.h  expand.c	expand.o  Makefile  myTests  ush  ush.c  ush.o
+% cd ..
+% ls
+A1Files  A2Files  microshell.c	README.md  ush	ushclone.c
+% cd ush
+% ls
+builtin.c  builtin.o  defn.h  expand.c	expand.o  Makefile  myTests  ush  ush.c  ush.o
+% set env       envset big abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij
+% s echo ${big}${big}$[ {big}
+buffer overflow
+% envset big small
+% echo ${big}${ni  big}${big}
+smallsmallsmall
+% ec                           echo       ${HOME}
+/home/wallac21
+% envus nset big
+% echo ${big} is gone
+is gone
+% echo $$$
+18201$
+% echo ${ broken}
+$broken}
+% echo $$${LANG}${ {missing
+ush: no matching }
+% echo $$${LANG}$broken}
+18201en_US.UTF-8$broken}
+% cd  ls
+builtin.c  builtin.o  defn.h  expand.c	expand.o  Makefile  myTests  ush  ush.c  ush.o
+% cd
+% ls
+ comment     Firefox_wallpaper.png	 Lab2	       Music			     snap	  _viminfo
+ core	    'Game of Thrones Pool.pdf'	 Lab2~	       out.ogv			     Templates	 'VirtualBox VMs'
+ Desktop     guide.log			 Lab2.txt      Pictures			     test.scm~	  x
+ Documents   guide.tex			 ll1.scm       Public			     typescript
+ Downloads  '#hello#'			 mozilla.pdf   public_html_moved-README.sh   Videos
+% cd Docments/347/csci347_s20/ush
+cd: No such file or directory
+% cd Documents/345 6 7/s csci347_s2o 0/ush
+% ls
+builtin.c  builtin.o  defn.h  expand.c	expand.o  Makefile  myTests  ush  ush.c  ush.o
+% envunset HOME
+% cd
+cd: Bad address
+% echo "${LANG}"
+en_US.UTF-8
+% ^C
+[16:11:19] wallac21@cf164-22:~/Documents/347/csci347_s20/ush$ exot[K[Kit
+exit
+
+Script done on 2020-04-22 16:11:21-0700
