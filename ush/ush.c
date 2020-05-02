@@ -42,7 +42,7 @@ int main(int mainargc, char **mainargv)
   char buffer[LINELEN];
   int len;
 
-  //infile = stdin;
+  int open = 0;
   
   while (1)
     {
@@ -52,8 +52,9 @@ int main(int mainargc, char **mainargv)
 	  infile = stdin;
 	  fprintf(stderr,"%% ");
 	}
-      if ( mainargc > 1 )
+      if ( mainargc > 1 && open == 0 )
 	{
+	  open = 1;
 	  infile = fopen(mainargv[1], "r");
 	  if ( infile == NULL)
 	    {
@@ -61,7 +62,7 @@ int main(int mainargc, char **mainargv)
 	      exit(127);
 	    }
 	}
-         
+      
       /* prompt and get line */
       if (fgets(buffer, LINELEN, infile) != buffer)
 	break;
@@ -91,12 +92,7 @@ int main(int mainargc, char **mainargv)
       
       /* Run it ... */
       processline(buffer);
-      if (infile != stdin)
-	{
-	  exit(0);
-	}
     }
-  //if (!feof(stdin))
   if (!feof(infile))
     perror("read");
   
