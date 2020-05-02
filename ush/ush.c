@@ -20,6 +20,9 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "defn.h"
+#define DEFINE_GLOBALS
+#include "globals.h"
+
 
 /* Constants */
 
@@ -33,31 +36,70 @@ char *removeQuotes(char *line, int n, int quotes, char **argarr);
 
 /* Shell main */
 
-int main(void)
+FILE* infile;
+int main(int mainargc, char **mainargv)
 {
   char buffer[LINELEN];
   int len;
 
+  //infile = stdin;
+  
   while (1)
-  {
-
-    /* prompt and get line */
-    fprintf(stderr, "%% ");
-    if (fgets(buffer, LINELEN, stdin) != buffer)
-      break;
-
-    /* Get rid of \n at end of buffer. */
-    len = strlen(buffer);
-    if (buffer[len - 1] == '\n')
-      buffer[len - 1] = 0;
-
-    /* Run it ... */
-    processline(buffer);
-  }
-
-  if (!feof(stdin))
+    {
+      
+      if ( mainargc == 1 )
+	{
+	  infile = stdin;
+	  fprintf(stderr,"%% ");
+	}
+      if ( mainargc > 1 )
+	{
+	  infile = fopen(mainargv[1], "r");
+	  if ( infile == NULL)
+	    {
+	      fprintf(stderr, "Error reading script.\n");
+	      exit(127);
+	    }
+	}
+         
+      /* prompt and get line */
+      if (fgets(buffer, LINELEN, infile) != buffer)
+	break;
+      
+      /* Get rid of \n at end of buffer. */
+      len = strlen(buffer);
+      int i = 0;
+      while ( i  < len )
+	{
+	  if ( buffer[i] == '#' && i == 0 )
+	    {
+	      buffer[i] = 0;
+	      break;
+	    }
+	  else if ( buffer[i] == '#' && buffer[i - 1] != '$' && i > 0 )
+	    {
+	      buffer[i] = 0;
+	      break;
+	    }
+	  else if ( i == ( len - 1) )
+	    {
+	      buffer[len - 1] = 0;
+	      break;
+	    }
+	  i++;
+	}
+      
+      /* Run it ... */
+      processline(buffer);
+      if (infile != stdin)
+	{
+	  exit(0);
+	}
+    }
+  //if (!feof(stdin))
+  if (!feof(infile))
     perror("read");
-
+  
   return 0; /* Also known as exit (0); */
 }
 
