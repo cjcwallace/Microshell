@@ -8,7 +8,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <ctype.h>
 #include "defn.h"
+#include "globals.h"
 
    /* newsize default 1024 */
    /* orig: input string, scan only once */
@@ -50,7 +52,7 @@ int expand (char *orig, char *new, int newsize)
 		    }
 		  if ( writeNew( new, rv, &j, newsize ) == -1 )
 		    {
-		      return -1; // Write failed, presumably from overflow
+		      return -1; /* Write failed, presumably from overflow */
 		    }
 		}
 	      if ( orig[i] == 0 )
@@ -60,7 +62,7 @@ int expand (char *orig, char *new, int newsize)
 		}
 	      if ( orig[i] == '$') continue; /* 2 args next to eachother */
 	    }
-	  else if (orig[i] == '$' ) /* ppid */
+	  else if ( orig[i] == '$' ) /* ppid */
 	    {
 	      char pidstring[21];
 	      if ( snprintf(pidstring, 21, "%d", getpid()) < 1 )
@@ -70,7 +72,7 @@ int expand (char *orig, char *new, int newsize)
 		}
 	      if ( writeNew( new, pidstring, &j, newsize ) == -1 )
 		{
-		  return -1; // Write failed
+		  return -1; /* Write failed */
 		}
 	      if ( orig[++i] == 0 )
 		{
@@ -78,6 +80,64 @@ int expand (char *orig, char *new, int newsize)
 		  break;
 		}
 	      if ( orig[i] == '$' ) continue; /* 2 args next to eachother */
+	    }
+	  else if ( orig[i] == '#' )
+	    {
+	      char numArgs[21];
+	      if ( sprintf(numArgs, "%d", (gargc - gshift)) < 1)
+		{
+		  fprintf(stderr, "error finding number of args");
+		  return -1;
+		}
+	      if ( writeNew( new, numArgs, &j, newsize ) == -1 )
+		{
+		  return -1;
+		}
+	      if ( orig[++i] == 0 )
+		{
+		  new[j] = 0;
+		  break;
+		}
+	      if ( orig[i] == '$' ) continue;
+	    }
+	  else if ( isdigit(orig[i]) ) /* get arg  */
+	    {
+	      /*
+	      if ( (gshift + orig[i]) > gargc || (gshift + orig[i]) < 0 )
+		{
+		  if ( writeNew( new, " ", &j, newsize ) == -1 )
+		    {
+		      return -1;
+		    }
+		}
+	      */
+	      int start = i;
+	      while ( isdigit(orig[i]) ) 
+		{
+		  printf("orig[i] = %c\n", orig[i]);
+		  i++;
+		}
+	      char tmp = orig[i];
+	      orig[i] = 0;
+	      printf("orig[start]: %d\n", orig[start]);
+	      int num = atoi(orig[start]);
+	      orig[i] = tmp;
+	      printf("gshift = %d, num = %d\n", gshift, num);
+	      rv = gargv[gshift + num];
+	      printf("i = %d, gargv[i] = %s\n", i, gargv[num]);
+	      if ( rv != NULL )
+		{
+		  if ( writeNew( new, rv, &j, newsize ) == -1 )
+		    {
+		      return -1;
+		    }
+		}
+	      if ( orig[++i] == 0 )
+		{
+		  new[j] = 0;
+		  break;
+		}
+	      if ( orig[i] == '$' ) continue;
 	    }
 	  else
 	    {
