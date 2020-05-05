@@ -42,6 +42,11 @@ int main(int mainargc, char **mainargv)
   char buffer[LINELEN];
   int len;
 
+  gargc = mainargc;
+  gargv = mainargv;
+  gshift = 0;
+  //printf("gargc: %d, gargv: %s\n", gargc, gargv[0]);
+  
   int open = 0;
   
   while (1)
@@ -54,6 +59,7 @@ int main(int mainargc, char **mainargv)
 	}
       if ( mainargc > 1 && open == 0 )
 	{
+	  gshift = 1;
 	  open = 1;
 	  infile = fopen(mainargv[1], "r");
 	  if ( infile == NULL)
@@ -77,19 +83,19 @@ int main(int mainargc, char **mainargv)
 	      buffer[i] = 0;
 	      break;
 	    }
-	  else if ( buffer[i] == '#' && buffer[i - 1] != '$' && i > 0 )
+	  else if ( i > 0 && buffer[i] == '#' && buffer[i - 1] != '$' )
 	    {
 	      buffer[i] = 0;
 	      break;
 	    }
-	  else if ( i == ( len - 1) )
+	  else if ( buffer[i]  == '\n' )
 	    {
-	      buffer[len - 1] = 0;
+	      buffer[i] = 0;
 	      break;
 	    }
 	  i++;
 	}
-      
+      //printf("\n~~~~~LINE: %s\n", buffer);
       /* Run it ... */
       processline(buffer);
     }
@@ -136,7 +142,7 @@ void processline(char *line)
 	  execvp(*args, args);
 	   /* execlp reurned, wasn't successful */
 	  perror("exec");
-	  fclose(stdin); // avoid a linux stdio bug
+	  fclose(infile); // avoid a linux stdio bug
 	  exit(127);
 	}
       /* Have the parent wait for child to complete */

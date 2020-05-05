@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include "defn.h"
+#include "globals.h"
 
 /* Exit */
 void bi_exit( char **args, int *argc )
@@ -79,14 +80,54 @@ void bi_cd(char **args, int *argc )
     }
 }
 
+/* shift Functionality */
+void bi_shift( char **args, int *argc )
+{
+  if ( *argc < 2 )
+    {
+      gshift += 1;
+    }
+  if ( *argc == 2 )
+    {
+      int shiftval = atoi(args[1]);
+      if ( shiftval > (gargc + gshift) )
+	{
+	  fprintf(stderr, "err: shift out of range\n");
+	  return;
+	}
+      //int shiftval = atoi(args[1]);
+      gshift = gshift + shiftval;
+    }
+}
+
+/* unshift Functionality */
+void bi_unshift( char **args, int *argc )
+{
+  if ( *argc < 2 )
+    {
+      gshift = 1;
+    }
+  if ( *argc == 2 )
+    {
+      int unshiftval = atoi(args[1]);
+      if ( unshiftval > (gargc - gshift) )
+	{
+	  fprintf(stderr, "err: unshift out of range\n");
+	  return;
+	}
+      //int unshiftval = atoi(args[1]);
+      gshift = gshift - unshiftval;
+    }
+}
+
 typedef void (*bicommands) ();
 /* Store functions for built in commands */
-bicommands cmd[] = { &bi_exit, &bi_envset, &bi_envunset, &bi_cd };
+bicommands cmd[] = { &bi_exit, &bi_envset, &bi_envunset, &bi_cd, &bi_shift, &bi_unshift };
 
 int builtIn (char **args, int *argc)
 {
-  const int size = 4;
-  const char *commands[] = { "exit", "envset", "envunset", "cd" };
+  const int size = 6;
+  const char *commands[] = { "exit", "envset", "envunset", "cd", "shift", "unshift" };
     
   for ( int i = 0; i < size; i++ )
     {

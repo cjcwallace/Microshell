@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <dirent.h>
 #include "defn.h"
 #include "globals.h"
 
@@ -23,6 +24,7 @@ int expand (char *orig, char *new, int newsize)
   int i = 0; /* orig pointer */
   int j = 0; /* new pointer */
   char *rv;  /* holds variables from ${name} */
+  char *numarg; /* holds value of arg */
   while ( orig[i] != 0 )
     {
       if ( orig[i] == '$' )
@@ -33,7 +35,7 @@ int expand (char *orig, char *new, int newsize)
 	      int envIndex = i + 1;
 	      while ( orig[i] != '}' ) /* get variable name */
 		{
-		  if ( orig[i] == 0)
+		  if ( orig[i] == 0 )
 		    {
 		      fprintf(stderr, "ush: no matching }\n");
 		      return -1;
@@ -81,10 +83,10 @@ int expand (char *orig, char *new, int newsize)
 		}
 	      if ( orig[i] == '$' ) continue; /* 2 args next to eachother */
 	    }
-	  else if ( orig[i] == '#' )
+	  else if ( orig[i] == '#' ) /* get number of args */
 	    {
 	      char numArgs[21];
-	      if ( sprintf(numArgs, "%d", (gargc - gshift)) < 1)
+	      if ( sprintf(numArgs, "%d", (gargc - gshift)) < 1 )
 		{
 		  fprintf(stderr, "error finding number of args");
 		  return -1;
@@ -102,37 +104,36 @@ int expand (char *orig, char *new, int newsize)
 	    }
 	  else if ( isdigit(orig[i]) ) /* get arg  */
 	    {
-	      /*
-	      if ( (gshift + orig[i]) > gargc || (gshift + orig[i]) < 0 )
-		{
-		  if ( writeNew( new, " ", &j, newsize ) == -1 )
-		    {
-		      return -1;
-		    }
-		}
-	      */
-	      int start = i;
+	      //printf("\nisdigit: %c", orig[i]);
+	      char numc[8];
+	      memset(&numc[0], 0, sizeof(numc));
 	      while ( isdigit(orig[i]) ) 
 		{
-		  printf("orig[i] = %c\n", orig[i]);
+		  //printf("\norig[i] = %c\n", orig[i]);
+		  strncat(numc, &orig[i], 1);
 		  i++;
 		}
-	      char tmp = orig[i];
-	      orig[i] = 0;
-	      printf("orig[start]: %d\n", orig[start]);
-	      int num = atoi(orig[start]);
-	      orig[i] = tmp;
-	      printf("gshift = %d, num = %d\n", gshift, num);
-	      rv = gargv[gshift + num];
-	      printf("i = %d, gargv[i] = %s\n", i, gargv[num]);
-	      if ( rv != NULL )
+	      int num = atoi(numc);
+	      //printf("numc: %s, num: %d\n", numc, num);
+	      // printf("gshift = %d, num = %d\n", gshift, num);
+	      if ( (gshift + num) <= gargc )
 		{
-		  if ( writeNew( new, rv, &j, newsize ) == -1 )
+		  numarg = gargv[gshift + num];
+		}
+	      if ( (gshift + num) > gargc )
+		{
+		  numarg = " ";
+		}	      
+	      //printf("i = %d, numarg = %s\n", i, numarg);
+	      if ( numarg != NULL )
+		{
+		  if ( writeNew( new, numarg, &j, newsize ) == -1 )
 		    {
 		      return -1;
 		    }
 		}
-	      if ( orig[++i] == 0 )
+	      memset(&numc[0], 0, 8);
+	      if ( orig[i] == 0 )
 		{
 		  new[j] = 0;
 		  break;
@@ -143,6 +144,56 @@ int expand (char *orig, char *new, int newsize)
 	    {
 	      i--;
 	    }
+	}
+      if ( orig[i] == '*' )
+	{
+	  DIR *d;
+	  struct dirent *dir;
+	  d = opendir(".");
+	  if (!d)
+	    {
+	      fprintf(stderr, "err: can't open directory\n");
+	      return -1;
+	    }
+	  if ( orig[i - 1] == ' ' && (orig[i + 1] == ' ' || orig[i + 1] == 0) )
+	    {
+	      while ( (dir = readdir(d)) != NULL )
+		{
+		  char *fname = dir->d_name;
+		  if ( strcmp(fname, ".") != 0 && strcmp(fname, "..") != 0 )
+		    {
+		      printf("%s\n", fname);
+		    }
+		}
+	      j = j + 2;
+	    }
+	  if ( orig[i - 1] == ' ' && orig[i + 1] != ' ' )
+	    {
+	      int sufIndex = i + 1;
+	      while ( orig[i] != ' ' )
+		{
+		  i++;
+		}
+	      char tmp = orig[i];
+	      orig[i] = 0; /* Temp replace with EOS */
+	      char *suf = &orig[sufIndex];
+	      orig[i] = tmp;
+	      while ( (dir = readdir(d)) != NULL )
+		{
+		  char *fname = dir->d_name;
+		  int in = strlen(fname) - strlen(suf);
+		  if ( strcmp(&fname[in], suf) == 0 )
+		    {
+		      printf("%s\n", fname);
+		    }
+		}
+	      j = j + strlen(suf) + 2;
+	    }
+	  if ( orig[i - 1] == '\\' )
+	    {
+	      i++;
+	    }
+	  closedir(d);
 	}
       if ( j >= newsize ) /* Check to ensure we still have space */
 	{
