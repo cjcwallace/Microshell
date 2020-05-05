@@ -162,12 +162,17 @@ int expand (char *orig, char *new, int newsize)
 		  char *fname = dir->d_name;
 		  if ( strcmp(fname, ".") != 0 && strcmp(fname, "..") != 0 )
 		    {
-		      printf("%s\n", fname);
+		      if ( writeNew( new, fname, &j, newsize ) == -1
+			   || writeNew( new, " ", &j, newsize ) == - 1 )
+			{
+			  fprintf(stderr, "error writing all files\n");
+			  return -1;
+			}
 		    }
 		}
-	      j = j + 2;
+	      i = i + 1;
 	    }
-	  if ( orig[i - 1] == ' ' && orig[i + 1] != ' ' )
+	  if ( orig[i - 1] == ' ' && orig[i + 1] != ' ' && orig[i + 1] != '.' )
 	    {
 	      int sufIndex = i + 1;
 	      while ( orig[i] != ' ' )
@@ -177,17 +182,25 @@ int expand (char *orig, char *new, int newsize)
 	      char tmp = orig[i];
 	      orig[i] = 0; /* Temp replace with EOS */
 	      char *suf = &orig[sufIndex];
-	      orig[i] = tmp;
+	      int suflen = strlen(suf);
 	      while ( (dir = readdir(d)) != NULL )
 		{
 		  char *fname = dir->d_name;
-		  int in = strlen(fname) - strlen(suf);
+		  int in = strlen(fname) - suflen;
 		  if ( strcmp(&fname[in], suf) == 0 )
 		    {
-		      printf("%s\n", fname);
+		      if ( writeNew( new, fname, &j, newsize ) == -1
+			   || writeNew( new, " ", &j, newsize ) == -1 )
+			{
+			  fprintf(stderr, "error with d_name\n");
+			  return -1;
+			}
 		    }
 		}
-	      j = j + strlen(suf) + 2;
+	      orig[i] = tmp;
+	      printf("suf: %s, len:%d, i:%d\n",suf, suflen, i);
+	      i = i + suflen;
+	      printf("post incr i:%d\n", i);
 	    }
 	  if ( orig[i - 1] == '\\' )
 	    {
