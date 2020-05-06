@@ -164,7 +164,7 @@ int expand (char *orig, char *new, int newsize)
 	    }
 	  /* print all files */
 	  if ( (orig[i - 1] == ' ' || orig[i - 1] == '"')
-	       && (orig[i + 1] == ' ' || orig[i + 1] == 0) )
+	       && (orig[i + 1] == ' ' || orig[i +1] == '"' || orig[i + 1] == 0) )
 	    {
 	      while ( (dir = readdir(d)) != NULL )
 		{
@@ -179,12 +179,13 @@ int expand (char *orig, char *new, int newsize)
 			}
 		    }
 		}
+	      j--;
 	      i = i + 1;
 	    }
 	  /* context */
 	  if ( (orig[i - 1] == ' ' || orig[i - 1] == '"')
-	       && orig[i + 1] != ' ' && orig[i + 1] != '"'
-	       && orig[i + 1] != '.' )
+	       && orig[i + 1] != ' ' && orig[i + 1] != '"')
+	       //&& orig[i + 1] != '.' )
 	    {
 	      int sufIndex = i + 1;
 	      while ( orig[i] != ' ' && orig[i] != '"' && orig[i] != '\0' )
