@@ -12,6 +12,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <sys/stat.h>
+#include <time.h>
 #include "defn.h"
 #include "globals.h"
 
@@ -152,10 +153,14 @@ void bi_sstat( char **args, int *argc )
 	    {
 	      char *uName = getUser(st);
 	      char *gName = getGroup(st);
-	      
+	      mode_t fMode = st.st_mode;
+	      char fPermissions[11];
+	      strmode(fMode, fPermissions);
 	      off_t fSize = (int) st.st_size;
 	      nlink_t fLinks = (int) st.st_nlink;
-	      printf("%s %s %s %ld %ld\n", fName, uName, gName, fSize, fLinks);
+	      char *fTime = asctime(localtime(&st.st_ctime));
+	      printf("%s %s %s %s %ld %ld %s",
+		     fName, uName, gName, fPermissions, fSize, fLinks, fTime);
 	      i++;
 	    }
 	}
@@ -175,12 +180,10 @@ char * getUser( struct stat st )
 
 char * getGroup( struct stat st )
 {
-  char *gName;
   struct group *gr = getgrgid(st.st_gid);
   if ( gr != 0 )
     {
-      gName = gr->gr_name;
-      return gName; 
+      return gr->gr_name;
     }
   return NULL;
 }
