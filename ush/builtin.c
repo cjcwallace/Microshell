@@ -93,10 +93,12 @@ void bi_shift( char **args, int *argc )
 {
   if ( *argc < 2 )
     {
-      if ( gshift + 1 <= gargc )
+      if ( (gshift + 1)  > (gargc + gshift) )
 	{
-	  gshift += 1;
+	  fprintf(stderr, "err: shift out of range");
+	  return -1;
 	}
+      gshift += 1;
     }
   if ( *argc == 2 )
     {
@@ -159,11 +161,11 @@ void bi_sstat( char **args, int *argc )
 	      mode_t fMode = st.st_mode;
 	      char fPermissions[11];
 	      strmode(fMode, fPermissions);
-	      off_t fSize = (int) st.st_size;
 	      nlink_t fLinks = (int) st.st_nlink;
+	      off_t fSize = (int) st.st_size;
 	      char *fTime = asctime(localtime(&st.st_ctime));
 	      fprintf(stdout,"%s %s %s %s%ld %ld %s",
-		     fName, uName, gName, fPermissions, fSize, fLinks, fTime);
+		      fName, uName, gName, fPermissions, fLinks, fSize, fTime);
 	      fflush(stdout);
 	      i++;
 	    }
