@@ -227,7 +227,7 @@ int expand (char *orig, char *new, int newsize)
 		}
 	      orig[i] = tmp;
 	      //if ( found == 1 ) j--;
-	      i = i + 1;
+	      //i = i + 1;
 	    }
 	  closedir(d);
 	}
