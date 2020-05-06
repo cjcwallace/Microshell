@@ -96,7 +96,7 @@ void bi_shift( char **args, int *argc )
       if ( (gshift + 1)  > (gargc + gshift) )
 	{
 	  fprintf(stderr, "err: shift out of range");
-	  return -1;
+	  return;
 	}
       gshift += 1;
     }
