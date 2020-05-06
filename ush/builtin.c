@@ -93,7 +93,7 @@ void bi_shift( char **args, int *argc )
 {
   if ( *argc < 2 )
     {
-      if ( (gshift + 1)  >= (gargc + gshift) )
+      if ( (gshift + 1)  >= (gargc - 1) )
 	{
 	  fprintf(stderr, "err: shift out of range");
 	  return;
@@ -103,7 +103,7 @@ void bi_shift( char **args, int *argc )
   if ( *argc == 2 )
     {
       int shiftval = atoi(args[1]);
-      if ( shiftval >= (gargc + gshift) )
+      if ( (shiftval + gshift)  >= (gargc - 1) )
 	{
 	  fprintf(stderr, "err: shift out of range\n");
 	  return;
