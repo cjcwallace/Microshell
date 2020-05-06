@@ -163,7 +163,7 @@ void bi_sstat( char **args, int *argc )
 	      strmode(fMode, fPermissions);
 	      nlink_t fLinks = (int) st.st_nlink;
 	      off_t fSize = (int) st.st_size;
-	      char *fTime = asctime(localtime(&st.st_ctime));
+	      char *fTime = asctime(localtime(&st.st_mtime));
 	      fprintf(stdout,"%s %s %s %s%ld %ld %s",
 		      fName, uName, gName, fPermissions, fLinks, fSize, fTime);
 	      fflush(stdout);
