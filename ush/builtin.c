@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
+#include <pwd.h>
+#include <grp.h>
 #include "defn.h"
 #include "globals.h"
 
@@ -120,14 +122,68 @@ void bi_unshift( char **args, int *argc )
     }
 }
 
+/* sstat Functionality */
+void bi_sstat( char **args, int *argc )
+{
+  if ( *argc == 1 )
+    {
+      fprintf(stderr, "stat: no files to stat\n");
+      return;
+    }
+  if ( *argc >= 2 )
+    {
+      int i = 1;
+      while ( i < argc )
+	{
+	  struct stat st;
+	  char *fName = args[i];
+	  if ( stat(fName, &st) != 0 && fName != '*')
+	    {
+	      printf("%s: No such file or directory\n");
+	      continue;
+	    }
+	  if ( args[i] == '*' ) /* stat all files in dir */
+	    {
+	      
+	    }
+	  else /* stat given file */
+	    {
+	      char *uName = getUser(&st, uName);
+	      char *gName = getGroup(&st, gName);
+	      off_t fSize = (int) st.st_size;
+	      nlink_t fLinks = (int) st.st_nlink;
+	      printf("%s %s %d %d", uName, gName, fSize, fLinks);
+	    }
+	}
+    }
+}
+
+void getUser( struct stat st, char *uName )
+{
+  if ( struct passwd *pw = getpwuid(&st.st_uid) != 0 )
+    {
+      &uName = pw->pw_name;
+    }
+}
+
+void getGroup( struct stat st, char *gName )
+{
+  if ( struct group *gr = getgrid(&st.st_gid) != 0 )
+    {
+      &gName = gr->gr_name;
+    }
+}
+
 typedef void (*bicommands) ();
 /* Store functions for built in commands */
-bicommands cmd[] = { &bi_exit, &bi_envset, &bi_envunset, &bi_cd, &bi_shift, &bi_unshift };
+bicommands cmd[] =
+  { &bi_exit, &bi_envset, &bi_envunset, &bi_cd, &bi_shift, &bi_unshift, &bi_sstat };
 
 int builtIn (char **args, int *argc)
 {
-  const int size = 6;
-  const char *commands[] = { "exit", "envset", "envunset", "cd", "shift", "unshift" };
+  const int size = 7;
+  const char *commands[] =
+    { "exit", "envset", "envunset", "cd", "shift", "unshift", "sstat" };
     
   for ( int i = 0; i < size; i++ )
     {
