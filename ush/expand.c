@@ -182,7 +182,8 @@ int expand (char *orig, char *new, int newsize)
 	      i = i + 1;
 	    }
 	  /* context */
-	  if ( orig[i - 1] == ' ' && orig[i + 1] != ' '
+	  if ( (orig[i - 1] == ' ' || orig[i - 1] == '"')
+	       && orig[i + 1] != ' ' && orig[i + 1] != '"'
 	       && orig[i + 1] != '.' )
 	    {
 	      int sufIndex = i + 1;

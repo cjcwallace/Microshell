@@ -122,7 +122,7 @@ void bi_unshift( char **args, int *argc )
     {
       int unshiftval = atoi(args[1]);
       //printf("unshiftval:%d, gshift:%d, gargc:%d \n", unshiftval, gshift, gargc);
-      if ( unshiftval > gshift )
+      if ( unshiftval >= gshift )
 	{
 	  fprintf(stderr, "err: unshift out of range\n");
 	  return;
@@ -162,7 +162,7 @@ void bi_sstat( char **args, int *argc )
 	      off_t fSize = (int) st.st_size;
 	      nlink_t fLinks = (int) st.st_nlink;
 	      char *fTime = asctime(localtime(&st.st_ctime));
-	      fprintf(stdout,"%s %s %s %s %ld %ld %s",
+	      fprintf(stdout,"%s %s %s %s%ld %ld %s",
 		     fName, uName, gName, fPermissions, fSize, fLinks, fTime);
 	      fflush(stdout);
 	      i++;
@@ -179,7 +179,9 @@ char * getUser( struct stat st )
     {
       return pw->pw_name;
     }
-  return NULL;
+  char *fuid = malloc(11 * sizeof(char));
+  sprintf(fuid, "%d", st.st_uid);
+  return fuid;
 }
 
 char * getGroup( struct stat st )
@@ -189,7 +191,9 @@ char * getGroup( struct stat st )
     {
       return gr->gr_name;
     }
-  return NULL;
+  char *fgid = malloc(11 * sizeof(char));
+  sprintf(fgid, "%d", st.st_gid);
+  return fgid;
 }
 
 typedef void (*bicommands) ();
