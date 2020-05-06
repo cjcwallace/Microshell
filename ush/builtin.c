@@ -93,7 +93,10 @@ void bi_shift( char **args, int *argc )
 {
   if ( *argc < 2 )
     {
-      gshift += 1;
+      if ( gshift + 1 <= gargc )
+	{
+	  gshift += 1;
+	}
     }
   if ( *argc == 2 )
     {
@@ -118,12 +121,12 @@ void bi_unshift( char **args, int *argc )
   if ( *argc == 2 )
     {
       int unshiftval = atoi(args[1]);
-      if ( unshiftval > (gargc - gshift) )
+      //printf("unshiftval:%d, gshift:%d, gargc:%d \n", unshiftval, gshift, gargc);
+      if ( unshiftval > gshift )
 	{
 	  fprintf(stderr, "err: unshift out of range\n");
 	  return;
-	}
-      //int unshiftval = atoi(args[1]);
+	};
       gshift = gshift - unshiftval;
     }
 }
@@ -159,8 +162,9 @@ void bi_sstat( char **args, int *argc )
 	      off_t fSize = (int) st.st_size;
 	      nlink_t fLinks = (int) st.st_nlink;
 	      char *fTime = asctime(localtime(&st.st_ctime));
-	      printf("%s %s %s %s %ld %ld %s",
+	      fprintf(stdout,"%s %s %s %s %ld %ld %s",
 		     fName, uName, gName, fPermissions, fSize, fLinks, fTime);
+	      fflush(stdout);
 	      i++;
 	    }
 	}
