@@ -122,6 +122,23 @@ void bi_unshift( char **args, int *argc )
     }
 }
 
+/* sstat helpers */
+void getUser( struct stat st, char *uName )
+{
+  if ( struct passwd *pw = getpwuid(&st.st_uid) != 0 )
+    {
+      &uName = pw->pw_name;
+    }
+}
+
+void getGroup( struct stat st, char *gName )
+{
+  if ( struct group *gr = getgrid(&st.st_gid) != 0 )
+    {
+      &gName = gr->gr_name;
+    }
+}
+
 /* sstat Functionality */
 void bi_sstat( char **args, int *argc )
 {
@@ -155,22 +172,6 @@ void bi_sstat( char **args, int *argc )
 	      printf("%s %s %d %d", uName, gName, fSize, fLinks);
 	    }
 	}
-    }
-}
-
-void getUser( struct stat st, char *uName )
-{
-  if ( struct passwd *pw = getpwuid(&st.st_uid) != 0 )
-    {
-      &uName = pw->pw_name;
-    }
-}
-
-void getGroup( struct stat st, char *gName )
-{
-  if ( struct group *gr = getgrid(&st.st_gid) != 0 )
-    {
-      &gName = gr->gr_name;
     }
 }
 
