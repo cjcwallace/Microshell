@@ -185,7 +185,6 @@ int expand (char *orig, char *new, int newsize)
 	  /* context */
 	  if ( (orig[i - 1] == ' ' || orig[i - 1] == '"')
 	       && orig[i + 1] != ' ' && orig[i + 1] != '"')
-	       //&& orig[i + 1] != '.' )
 	    {
 	      int sufIndex = i + 1;
 	      while ( orig[i] != ' ' && orig[i] != '"' && orig[i] != '\0' )
@@ -195,8 +194,7 @@ int expand (char *orig, char *new, int newsize)
 	      char tmp = orig[i];
 	      orig[i] = 0; /* Temp replace with EOS */
 	      char *suf = &orig[sufIndex];
-	      //printf("suf:%s\n", suf);
-	      if ( strstr(suf, "/") != NULL)
+	      if ( strstr(suf, "/") != NULL )
 		{
 		  fprintf(stderr, "context cannot contain \'/\'\n");
 		  return -1;
@@ -218,10 +216,9 @@ int expand (char *orig, char *new, int newsize)
 			}
 		    }
 		}
-	      //if ( found == 1 ) j--;
 	      if ( found == 0 )
 		{
-		  if ( writeNew( new, suf, &j, newsize ) == -1
+		  if ( writeNew( new, &orig[sufIndex -1], &j, newsize ) == -1
 		       || writeNew( new, " ", &j, newsize ) == -1 )
 		    {
 		      fprintf(stderr, "error with writing\n");
@@ -229,17 +226,9 @@ int expand (char *orig, char *new, int newsize)
 		    }
 		}
 	      orig[i] = tmp;
-	      if ( found == 1 ) j--;
-	      //printf("i:%d, suflen:%d\n", i, suflen);
+	      //if ( found == 1 ) j--;
 	      i = i + 1;
 	    }
-	  /*
-	    if ( orig[i - 1] == '\\' )
-	    {
-	      printf("orig[i]:%c\n", orig[i]);
-	      break;
-	    }
-	  */
 	  closedir(d);
 	}
       if ( j >= newsize ) /* Check to ensure we still have space */
