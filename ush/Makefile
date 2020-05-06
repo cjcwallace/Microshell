@@ -7,14 +7,14 @@
 CC=gcc
 CFLAGS=-g -Wall
 
-SRCS = ush.c expand.c builtin.c
+SRCS = ush.c expand.c builtin.c strmode.c
 OUTF = ${SRCS:.c=.o}
 
 ush: $(OUTF)
 	$(CC) $(CFlags) -o ush $(OUTF)
 
 clean:
-	rm -f ush $(OUTF) *.c#
+	rm -f ush $(OUTF) *.c# core
 
 # dependency list
 

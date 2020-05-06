@@ -145,6 +145,13 @@ int expand (char *orig, char *new, int newsize)
 	      i--;
 	    }
 	}
+      if ( orig[i] == '\\' )
+	{
+	  if ( orig[i + 1] == '*' )
+	    {
+	      i++;
+	    }
+	}
       if ( orig[i] == '*' )
 	{
 	  DIR *d;
@@ -155,7 +162,9 @@ int expand (char *orig, char *new, int newsize)
 	      fprintf(stderr, "err: can't open directory\n");
 	      return -1;
 	    }
-	  if ( orig[i - 1] == ' ' && (orig[i + 1] == ' ' || orig[i + 1] == 0) )
+	  /* print all files */
+	  if ( (orig[i - 1] == ' ' || orig[i - 1] == '"')
+	       && (orig[i + 1] == ' ' || orig[i + 1] == 0) )
 	    {
 	      while ( (dir = readdir(d)) != NULL )
 		{
@@ -172,23 +181,33 @@ int expand (char *orig, char *new, int newsize)
 		}
 	      i = i + 1;
 	    }
-	  if ( orig[i - 1] == ' ' && orig[i + 1] != ' ' && orig[i + 1] != '.' )
+	  /* context */
+	  if ( orig[i - 1] == ' ' && orig[i + 1] != ' '
+	       && orig[i + 1] != '.' )
 	    {
 	      int sufIndex = i + 1;
-	      while ( orig[i] != ' ' )
+	      while ( orig[i] != ' ' && orig[i] != '"' && orig[i] != '\0' )
 		{
 		  i++;
 		}
 	      char tmp = orig[i];
 	      orig[i] = 0; /* Temp replace with EOS */
 	      char *suf = &orig[sufIndex];
+	      //printf("suf:%s\n", suf);
+	      if ( strstr(suf, "/") != NULL)
+		{
+		  fprintf(stderr, "context cannot contain \'/\'\n");
+		  return -1;
+		}
 	      int suflen = strlen(suf);
+	      int found = 0;
 	      while ( (dir = readdir(d)) != NULL )
 		{
 		  char *fname = dir->d_name;
 		  int in = strlen(fname) - suflen;
 		  if ( strcmp(&fname[in], suf) == 0 )
 		    {
+		      found = 1;
 		      if ( writeNew( new, fname, &j, newsize ) == -1
 			   || writeNew( new, " ", &j, newsize ) == -1 )
 			{
@@ -197,15 +216,28 @@ int expand (char *orig, char *new, int newsize)
 			}
 		    }
 		}
+	      //if ( found == 1 ) j--;
+	      if ( found == 0 )
+		{
+		  if ( writeNew( new, suf, &j, newsize ) == -1
+		       || writeNew( new, " ", &j, newsize ) == -1 )
+		    {
+		      fprintf(stderr, "error with writing\n");
+		      return -1;
+		    }
+		}
 	      orig[i] = tmp;
-	      printf("suf: %s, len:%d, i:%d\n",suf, suflen, i);
-	      i = i + suflen;
-	      printf("post incr i:%d\n", i);
+	      if ( found == 1 ) j--;
+	      //printf("i:%d, suflen:%d\n", i, suflen);
+	      i = i + 1;
 	    }
-	  if ( orig[i - 1] == '\\' )
+	  /*
+	    if ( orig[i - 1] == '\\' )
 	    {
-	      i++;
+	      printf("orig[i]:%c\n", orig[i]);
+	      break;
 	    }
+	  */
 	  closedir(d);
 	}
       if ( j >= newsize ) /* Check to ensure we still have space */
