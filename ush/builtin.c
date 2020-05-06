@@ -11,8 +11,13 @@
 #include <unistd.h>
 #include <pwd.h>
 #include <grp.h>
+#include <sys/stat.h>
 #include "defn.h"
 #include "globals.h"
+
+/* helper protos */
+char * getUser( struct stat st );
+char * getGroup( struct stat st );
 
 /* Exit */
 void bi_exit( char **args, int *argc )
@@ -123,20 +128,26 @@ void bi_unshift( char **args, int *argc )
 }
 
 /* sstat helpers */
-void getUser( struct stat st, char *uName )
+char * getUser( struct stat st )
 {
-  if ( struct passwd *pw = getpwuid(&st.st_uid) != 0 )
+  struct passwd *pw = getpwuid(st.st_uid);
+  if (pw != 0 )
     {
-      &uName = pw->pw_name;
+      return pw->pw_name;
     }
+  return NULL;
 }
 
-void getGroup( struct stat st, char *gName )
+char * getGroup( struct stat st )
 {
-  if ( struct group *gr = getgrid(&st.st_gid) != 0 )
+  char *gName;
+  struct group *gr = getgrgid(st.st_gid);
+  if ( gr != 0 )
     {
-      &gName = gr->gr_name;
+      gName = gr->gr_name;
+      return gName; 
     }
+  return NULL;
 }
 
 /* sstat Functionality */
@@ -150,26 +161,25 @@ void bi_sstat( char **args, int *argc )
   if ( *argc >= 2 )
     {
       int i = 1;
-      while ( i < argc )
+      while ( i < *argc )
 	{
-	  struct stat st;
 	  char *fName = args[i];
-	  if ( stat(fName, &st) != 0 && fName != '*')
+	  struct stat st;
+	  if ( stat(fName, &st) != 0 )
 	    {
-	      printf("%s: No such file or directory\n");
+	      printf("%s: No such file or directory\n", fName);
+	      i++;
 	      continue;
-	    }
-	  if ( args[i] == '*' ) /* stat all files in dir */
-	    {
-	      
 	    }
 	  else /* stat given file */
 	    {
-	      char *uName = getUser(&st, uName);
-	      char *gName = getGroup(&st, gName);
+	      char *uName = getUser(st);
+	      char *gName = getGroup(st);
+	      
 	      off_t fSize = (int) st.st_size;
 	      nlink_t fLinks = (int) st.st_nlink;
-	      printf("%s %s %d %d", uName, gName, fSize, fLinks);
+	      printf("%s %s %s %ld %ld\n", fName, uName, gName, fSize, fLinks);
+	      i++;
 	    }
 	}
     }
