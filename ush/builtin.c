@@ -127,29 +127,6 @@ void bi_unshift( char **args, int *argc )
     }
 }
 
-/* sstat helpers */
-char * getUser( struct stat st )
-{
-  struct passwd *pw = getpwuid(st.st_uid);
-  if (pw != 0 )
-    {
-      return pw->pw_name;
-    }
-  return NULL;
-}
-
-char * getGroup( struct stat st )
-{
-  char *gName;
-  struct group *gr = getgrgid(st.st_gid);
-  if ( gr != 0 )
-    {
-      gName = gr->gr_name;
-      return gName; 
-    }
-  return NULL;
-}
-
 /* sstat Functionality */
 void bi_sstat( char **args, int *argc )
 {
@@ -183,6 +160,29 @@ void bi_sstat( char **args, int *argc )
 	    }
 	}
     }
+}
+
+/* sstat helpers */
+char * getUser( struct stat st )
+{
+  struct passwd *pw = getpwuid(st.st_uid);
+  if (pw != 0 )
+    {
+      return pw->pw_name;
+    }
+  return NULL;
+}
+
+char * getGroup( struct stat st )
+{
+  char *gName;
+  struct group *gr = getgrgid(st.st_gid);
+  if ( gr != 0 )
+    {
+      gName = gr->gr_name;
+      return gName; 
+    }
+  return NULL;
 }
 
 typedef void (*bicommands) ();
