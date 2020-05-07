@@ -1,3 +1,9 @@
+/* Cameron Wallace
+ * April 29, 2020
+ * CSCI 347 Spring
+ * Assignment 3
+ */
+
 #pragma once
 
 #ifdef DEFINE_GLOBALS

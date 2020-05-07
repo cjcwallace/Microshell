@@ -45,7 +45,6 @@ int main(int mainargc, char **mainargv)
   gargc = mainargc;
   gargv = mainargv;
   gshift = 0;
-  //printf("gargc: %d, gargv: %s\n", gargc, gargv[0]);
   
   int open = 0;
   
@@ -114,7 +113,6 @@ void processline(char *line)
   int success = expand(line, newLine, LINELEN);
   if( success == -1 )
     {
-      //memset(newLine, 0, LINELEN);
       return;
     }
   

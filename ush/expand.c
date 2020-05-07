@@ -104,18 +104,14 @@ int expand (char *orig, char *new, int newsize)
 	    }
 	  else if ( isdigit(orig[i]) ) /* get arg  */
 	    {
-	      //printf("\nisdigit: %c", orig[i]);
 	      char numc[8];
 	      memset(&numc[0], 0, sizeof(numc));
 	      while ( isdigit(orig[i]) ) 
 		{
-		  //printf("\norig[i] = %c\n", orig[i]);
 		  strncat(numc, &orig[i], 1);
 		  i++;
 		}
 	      int num = atoi(numc);
-	      //printf("numc: %s, num: %d\n", numc, num);
-	      // printf("gshift = %d, num = %d\n", gshift, num);
 	      if ( (gshift + num) <= gargc )
 		{
 		  numarg = gargv[gshift + num];
@@ -124,7 +120,6 @@ int expand (char *orig, char *new, int newsize)
 		{
 		  numarg = " ";
 		}	      
-	      //printf("i = %d, numarg = %s\n", i, numarg);
 	      if ( numarg != NULL )
 		{
 		  if ( writeNew( new, numarg, &j, newsize ) == -1 )
@@ -216,7 +211,7 @@ int expand (char *orig, char *new, int newsize)
 			}
 		    }
 		}
-	      if ( found == 0 )
+	      if ( found == 0 ) /* File was not found in dir */
 		{
 		  if ( writeNew( new, &orig[sufIndex -1], &j, newsize ) == -1
 		       || writeNew( new, " ", &j, newsize ) == -1 )
@@ -226,8 +221,6 @@ int expand (char *orig, char *new, int newsize)
 		    }
 		}
 	      orig[i] = tmp;
-	      //if ( found == 1 ) j--;
-	      //i = i + 1;
 	    }
 	  closedir(d);
 	}

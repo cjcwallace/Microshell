@@ -108,7 +108,6 @@ void bi_shift( char **args, int *argc )
 	  fprintf(stderr, "err: shift out of range\n");
 	  return;
 	}
-      //int shiftval = atoi(args[1]);
       gshift = gshift + shiftval;
     }
 }
@@ -123,7 +122,6 @@ void bi_unshift( char **args, int *argc )
   if ( *argc == 2 )
     {
       int unshiftval = atoi(args[1]);
-      //printf("unshiftval:%d, gshift:%d, gargc:%d \n", unshiftval, gshift, gargc);
       if ( unshiftval >= gshift )
 	{
 	  fprintf(stderr, "err: unshift out of range\n");
@@ -201,7 +199,8 @@ char * getGroup( struct stat st )
 typedef void (*bicommands) ();
 /* Store functions for built in commands */
 bicommands cmd[] =
-  { &bi_exit, &bi_envset, &bi_envunset, &bi_cd, &bi_shift, &bi_unshift, &bi_sstat };
+  { &bi_exit, &bi_envset, &bi_envunset, &bi_cd,
+    &bi_shift, &bi_unshift, &bi_sstat };
 
 int builtIn (char **args, int *argc)
 {
