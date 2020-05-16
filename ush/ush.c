@@ -150,6 +150,14 @@ void processline(char *line)
 	  /* Wait wasn't successful */
 	  perror("wait");
 	}
+      if ( WIFEXITED(status) == 1 )
+	{
+	  exitv = WEXITSTATUS(status);
+	}
+      if ( WIFSIGNALED(status) == 1 )
+	{
+	  exitv = WTERMSIG(status) + 128;
+	}
     }
   free(args);
   memset(newLine, 0, LINELEN);
