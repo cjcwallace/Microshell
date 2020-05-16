@@ -126,7 +126,7 @@ void processline(char *line)
     {
       /* Start a new process to do the job. */
       cpid = fork();
-      if (cpid < 0 )
+      if (cpid < 0)
 	{
 	  /* Fork wasn't successful */
 	  perror("fork");
@@ -156,7 +156,19 @@ void processline(char *line)
 	}
       if ( WIFSIGNALED(status) == 1 )
 	{
-	  exitv = WTERMSIG(status) + 128;
+	  int sigret = WTERMSIG(status);
+	  exitv = sigret + 128;
+	  if ( sigret != 2 )
+	    {
+	      if ( WCOREDUMP(status) )
+		{
+		  printf("%s (core dumped)\n", sys_siglist[sigret]);
+		}
+	      else
+		{
+		  printf("%s\n", sys_siglist[sigret]);
+		}
+	    }
 	}
     }
   free(args);
