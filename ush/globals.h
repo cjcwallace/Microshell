@@ -23,3 +23,5 @@ GLOBAL_VAR (int, gargc, 0);
 GLOBAL_VAR (char **, gargv, NULL);
 
 GLOBAL_VAR (int, gshift, 0);
+
+GLOBAL_VAR (int, exitv, 0);

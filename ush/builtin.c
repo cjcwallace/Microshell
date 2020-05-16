@@ -23,13 +23,14 @@ char * getGroup( struct stat st );
 /* Exit */
 void bi_exit( char **args, int *argc )
 {
-
   if ( *argc == 1 )
     {
+      exitv = 0;
       exit(0);
     }
   if ( *argc > 1 )
     {
+      exitv = atoi(args[1]);
       exit(atoi(args[1]));
     }
 }
@@ -40,13 +41,16 @@ void bi_envset( char **args, int *argc )
   if ( *argc != 3 )
     {
       fprintf(stderr, "usage: envset name value\n");
+      exitv = 1;
       return;
     }
   if ( setenv(args[1], args[2], 1) != 0 )
     {
       perror("envset");
+      exitv = 1;
       return;
     }
+  exitv = 0;
 }
 
 /* Unset environment variables */
@@ -55,12 +59,16 @@ void bi_envunset( char **args, int *argc )
   if ( *argc != 2 )
     {
       fprintf(stderr, "usage: envunset name\n");
+      exitv = 1;
+      return;
     }
   if ( unsetenv(args[1]) != 0 )
     {
       perror("unsetenv");
+      exitv = 1;
       return;
     }
+  exitv = 0;
 }
 
 /* cd Functionality */
@@ -69,12 +77,15 @@ void bi_cd(char **args, int *argc )
   if ( *argc > 2 )
     {
       fprintf(stderr, "useage: cd [directory]\n");
+      exitv = 1;
+      return;
     }
   if ( *argc == 1 )
     {
       if ( chdir(getenv("HOME")) != 0)
 	{	 
 	  perror("cd");
+	  exitv = 1;
 	  return;
 	}
     }
@@ -83,9 +94,11 @@ void bi_cd(char **args, int *argc )
       if ( chdir(args[1]) != 0 )
 	{
 	  perror("cd");
+	  exitv = 1;
 	  return;
 	}
     }
+  exitv = 0;
 }
 
 /* shift Functionality */
@@ -96,6 +109,7 @@ void bi_shift( char **args, int *argc )
       if ( (gshift + 1)  >= gargc )
 	{
 	  fprintf(stderr, "err: shift out of range\n");
+	  exitv = 1;
 	  return;
 	}
       gshift += 1;
@@ -106,10 +120,12 @@ void bi_shift( char **args, int *argc )
       if ( (shiftval + gshift)  >= gargc )
 	{
 	  fprintf(stderr, "err: shift out of range\n");
+	  exitv = 1;
 	  return;
 	}
       gshift = gshift + shiftval;
     }
+  exitv = 0;
 }
 
 /* unshift Functionality */
@@ -125,10 +141,12 @@ void bi_unshift( char **args, int *argc )
       if ( unshiftval >= gshift )
 	{
 	  fprintf(stderr, "err: unshift out of range\n");
+	  exitv = 1;
 	  return;
 	};
       gshift = gshift - unshiftval;
     }
+  exitv = 0;
 }
 
 /* sstat Functionality */
@@ -137,6 +155,7 @@ void bi_sstat( char **args, int *argc )
   if ( *argc == 1 )
     {
       fprintf(stderr, "stat: no files to stat\n");
+      exitv = 1;
       return;
     }
   if ( *argc >= 2 )
@@ -169,6 +188,7 @@ void bi_sstat( char **args, int *argc )
 	    }
 	}
     }
+  exitv = 0;
 }
 
 /* sstat helpers */
