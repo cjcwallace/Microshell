@@ -30,7 +30,6 @@
 
 /* Prototypes */
 
-void processline(char *line);
 char **arg_parse(char *line, int *argcptr);
 char *removeQuotes(char *line, int n, int quotes, char **argarr);
 
@@ -41,7 +40,8 @@ int main(int mainargc, char **mainargv)
 {
   char buffer[LINELEN];
   int len;
-
+  struct rlimit lim = {40 * 200000 * sizeof(char)};
+ 
   gargc = mainargc;
   gargv = mainargv;
   gshift = 0;
@@ -150,29 +150,34 @@ void processline(char *line)
 	  /* Wait wasn't successful */
 	  perror("wait");
 	}
-      if ( WIFEXITED(status) == 1 )
-	{
-	  exitv = WEXITSTATUS(status);
-	}
-      if ( WIFSIGNALED(status) == 1 )
-	{
-	  int sigret = WTERMSIG(status);
-	  exitv = sigret + 128;
-	  if ( sigret != 2 )
-	    {
-	      if ( WCOREDUMP(status) )
-		{
-		  printf("%s (core dumped)\n", sys_siglist[sigret]);
-		}
-	      else
-		{
-		  printf("%s\n", sys_siglist[sigret]);
-		}
-	    }
-	}
+      sighelper(status);
     }
   free(args);
   memset(newLine, 0, LINELEN);
+}
+
+void sighelper(int status)
+{
+  if ( WIFEXITED(status) == 1 )
+    {
+      exitv = WEXITSTATUS(status);
+    }
+  if ( WIFSIGNALED(status) == 1 )
+    {
+      int sigret = WTERMSIG(status);
+      exitv = sigret + 128;
+      if ( sigret != 2 )
+	{
+	  if ( WCOREDUMP(status) )
+	    {
+	      printf("%s (core dumped)\n", sys_siglist[sigret]);
+	    }
+	  else
+	    {
+	      printf("%s\n", sys_siglist[sigret]);
+	    }
+	}
+    }
 }
 
 char **arg_parse(char *line, int *argcptr)

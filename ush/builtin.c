@@ -168,6 +168,7 @@ void bi_sstat( char **args, int *argc )
 	  if ( stat(fName, &st) != 0 )
 	    {
 	      printf("%s: No such file or directory\n", fName);
+	      exitv = 1;
 	      i++;
 	      continue;
 	    }
@@ -188,7 +189,7 @@ void bi_sstat( char **args, int *argc )
 	    }
 	}
     }
-  exitv = 0;
+  if ( exitv != 1 ) exitv = 0;
 }
 
 /* sstat helpers */

@@ -64,6 +64,26 @@ int expand (char *orig, char *new, int newsize)
 		}
 	      if ( orig[i] == '$') continue; /* 2 args next to eachother */
 	    }
+	  else if ( orig[i] == '(' )
+	    {
+	      int envIndex = i + 1;
+	      int paren = 1;
+	      
+	      while ( paren != 0 ) /* get content of parens */
+		{
+		  if ( orig[i] == 0 )
+		    {
+		      fprintf(stderr, "ush: expected closing \)\n");
+		      return -1;
+		    }
+		  if ( orig[i] == '(' ) paren++;
+		  if ( orig[i] == ')' ) paren--;
+		  i++;
+		}
+	      orig[i] = 0; /* Temp replace closing ) with 0 */
+	      processline( &orig[envIndex], 0, 1, [0,0]);
+		  
+	    }
 	  else if ( orig[i] == '$' ) /* ppid */
 	    {
 	      char pidstring[21];
@@ -75,6 +95,25 @@ int expand (char *orig, char *new, int newsize)
 	      if ( writeNew( new, pidstring, &j, newsize ) == -1 )
 		{
 		  return -1; /* Write failed */
+		}
+	      if ( orig[++i] == 0 )
+		{
+		  new[j] = 0;
+		  break;
+		}
+	      if ( orig[i] == '$' ) continue; /* 2 args next to eachother */
+	    }
+	  else if ( orig[i] == '?' )
+	    {
+	      char exitvalue[21];
+	      if ( snprintf(exitvalue, 21, "%d", exitv) < 1 )
+		{
+		  fprintf(stderr, "writing exit value failed\n");
+		  return -1;
+		}
+	      if ( writeNew( new, exitvalue, &j, newsize ) == -1 )
+		{
+		  return -1;
 		}
 	      if ( orig[++i] == 0 )
 		{
