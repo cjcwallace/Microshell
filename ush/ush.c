@@ -40,7 +40,7 @@ int main(int mainargc, char **mainargv)
 {
   char buffer[LINELEN];
   int len;
-  struct rlimit lim = {40 * 200000 * sizeof(char)};
+  //  struct rlimit lim = {40 * 200000 * sizeof(char)};
  
   gargc = mainargc;
   gargv = mainargv;
@@ -95,7 +95,7 @@ int main(int mainargc, char **mainargv)
 	  i++;
 	}
       /* Run it ... */
-      processline(buffer);
+      processline(buffer, 0, 1, NULL);
     }
   if (!feof(infile))
     perror("read");
@@ -103,23 +103,25 @@ int main(int mainargc, char **mainargv)
   return 0; /* Also known as exit (0); */
 }
 
-void processline(char *line)
+int processline(char *line, int infd, int outfd, int *flags)
 {
   pid_t cpid;
   int status;
+  int retpid = -1;
   
   char newLine[LINELEN];
   memset(newLine, 0, LINELEN);
   int success = expand(line, newLine, LINELEN);
   if( success == -1 )
     {
-      return;
+      perror("expand");
+      return -1;
     }
   
   int argc;
   char **args = arg_parse(newLine, &argc);
 
-  if (args == NULL) return;
+  if (args == NULL) return -1;
 
   int bi = builtIn(args, &argc);
   if ( bi != 0 )
@@ -130,13 +132,21 @@ void processline(char *line)
 	{
 	  /* Fork wasn't successful */
 	  perror("fork");
-	  return;
+	  return -1;
 	}
       
       /* Check for who we are! */
       if (cpid == 0)
 	{
 	  /* We are the child! */
+	  retpid = getpid();
+	  
+	  if ( dup2(outfd, 1) < 0 )
+	    {
+	      perror("dup");
+	      return -1;
+	    }
+
 	  execvp(*args, args);
 	   /* execlp reurned, wasn't successful */
 	  perror("exec");
@@ -154,6 +164,7 @@ void processline(char *line)
     }
   free(args);
   memset(newLine, 0, LINELEN);
+  return retpid;
 }
 
 void sighelper(int status)

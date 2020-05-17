@@ -25,6 +25,7 @@ int expand (char *orig, char *new, int newsize)
   int j = 0; /* new pointer */
   char *rv;  /* holds variables from ${name} */
   char *numarg; /* holds value of arg */
+  
   while ( orig[i] != 0 )
     {
       if ( orig[i] == '$' )
@@ -68,21 +69,61 @@ int expand (char *orig, char *new, int newsize)
 	    {
 	      int envIndex = i + 1;
 	      int paren = 1;
-	      
+	      int fd[2];
+	      i++;
+
 	      while ( paren != 0 ) /* get content of parens */
 		{
 		  if ( orig[i] == 0 )
 		    {
-		      fprintf(stderr, "ush: expected closing \)\n");
+		      fprintf(stderr, "ush: expected closing )\n");
 		      return -1;
 		    }
 		  if ( orig[i] == '(' ) paren++;
 		  if ( orig[i] == ')' ) paren--;
 		  i++;
 		}
-	      orig[i] = 0; /* Temp replace closing ) with 0 */
-	      processline( &orig[envIndex], 0, 1, [0,0]);
-		  
+	      orig[i - 1] = 0; /* Temp replace closing ) with 0 */
+	      if ( pipe(fd) < 0 )
+		{
+		  perror("pipe");
+		  return -1;
+		}
+	      processline( &orig[envIndex], 0, fd[1], NULL);
+	      close(fd[1]);
+
+	      /* Create a buffer that read() will fill, which is then passed
+	       * to new. */
+	      
+	      char readbuf[newsize];
+	      int readline = read(fd[0], readbuf, newsize);
+	      int readcount = 0;
+	      while (readline > 0)
+		{
+		  if ( writeNew( new, readbuf, &j, newsize) == -1 )
+		    {
+		      return -1;
+		    }
+		  readline = read(fd[0], new, newsize);
+		  if ( readline < 0 ) 
+		    {
+		      perror("read");
+		      return -1;
+		    }
+		  if ( readcount > 39 )
+		    {
+		      fprintf(stderr, "exceeded read limit\n");
+		    }
+		  j--;
+		}
+	      close(fd[0]);
+	      orig[i - 1] = ')';
+	      if ( orig[i] == 0)
+		{
+		  new[j] = 0;
+		  break;
+		}
+	      if ( orig[i] == '$' ) continue;
 	    }
 	  else if ( orig[i] == '$' ) /* ppid */
 	    {
