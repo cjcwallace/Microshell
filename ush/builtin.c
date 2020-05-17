@@ -150,7 +150,7 @@ void bi_unshift( char **args, int *argc )
 }
 
 /* sstat Functionality */
-void bi_sstat( char **args, int *argc )
+void bi_sstat( char **args, int *argc, int outfd )
 {
   if ( *argc == 1 )
     {
@@ -182,9 +182,9 @@ void bi_sstat( char **args, int *argc )
 	      nlink_t fLinks = (int) st.st_nlink;
 	      off_t fSize = (int) st.st_size;
 	      char *fTime = asctime(localtime(&st.st_mtime));
-	      fprintf(stdout,"%s %s %s %s%ld %ld %s",
+	      dprintf(outfd,"%s %s %s %s%ld %ld %s",
 		      fName, uName, gName, fPermissions, fLinks, fSize, fTime);
-	      fflush(stdout);
+	      //fflush(stdout);
 	      i++;
 	    }
 	}
@@ -223,7 +223,7 @@ bicommands cmd[] =
   { &bi_exit, &bi_envset, &bi_envunset, &bi_cd,
     &bi_shift, &bi_unshift, &bi_sstat };
 
-int builtIn (char **args, int *argc)
+int builtIn (char **args, int *argc, int outfd)
 {
   const int size = 7;
   const char *commands[] =
@@ -233,6 +233,11 @@ int builtIn (char **args, int *argc)
     {
       if ( strcmp(args[0], commands[i]) == 0 )
 	{
+	  if ( strcmp(args[0], "sstat") == 0 )
+	    {
+	      cmd[i]( args, argc, outfd );
+	      return 0;
+	    }
 	  cmd[i]( args, argc);
 	  return 0;
 	}

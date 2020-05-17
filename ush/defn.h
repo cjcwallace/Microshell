@@ -7,7 +7,7 @@
 
 /* Prototype */
 
-int builtIn (char **args, int *argc);
+int builtIn (char **args, int *argc, int outfd);
 int expand (char *orig, char *new, int newsize);
 int processline(char *line, int infd, int outfd, int *flags);
 int writeNew  (char *new, char *rv, int *j, int newsize);

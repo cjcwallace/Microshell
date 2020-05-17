@@ -325,6 +325,10 @@ int writeNew (char *new, char *rv, int *j, int newsize)
 	  fprintf(stderr, "buffer overflow\n");
 	  return -1;
 	}
+      if ( rv[a] == '\n' )
+	{
+	  rv[a] = ' ';
+	}
       new[*j] = rv[a++];
       *j = *j + 1;
     }

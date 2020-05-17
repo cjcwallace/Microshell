@@ -27,20 +27,21 @@
 /* Constants */
 
 #define LINELEN 1024
+#define MAXLEN 200000
 
 /* Prototypes */
 
 char **arg_parse(char *line, int *argcptr);
 char *removeQuotes(char *line, int n, int quotes, char **argarr);
+void got_int(int sig); 
 
 /* Shell main */
 
 FILE* infile;
 int main(int mainargc, char **mainargv)
 {
-  char buffer[LINELEN];
+  char buffer[MAXLEN];
   int len;
-  //  struct rlimit lim = {40 * 200000 * sizeof(char)};
  
   gargc = mainargc;
   gargv = mainargv;
@@ -108,10 +109,13 @@ int processline(char *line, int infd, int outfd, int *flags)
   pid_t cpid;
   int status;
   int retpid = -1;
+  struct sigaction sa;
+  sa.sa_handler = got_int;
+  sigemptyset(&sa.sa_mask);
   
-  char newLine[LINELEN];
-  memset(newLine, 0, LINELEN);
-  int success = expand(line, newLine, LINELEN);
+  char newLine[MAXLEN];
+  memset(newLine, 0, MAXLEN);
+  int success = expand(line, newLine, MAXLEN);
   if( success == -1 )
     {
       perror("expand");
@@ -123,7 +127,7 @@ int processline(char *line, int infd, int outfd, int *flags)
 
   if (args == NULL) return -1;
 
-  int bi = builtIn(args, &argc);
+  int bi = builtIn(args, &argc, outfd);
   if ( bi != 0 )
     {
       /* Start a new process to do the job. */
@@ -163,7 +167,7 @@ int processline(char *line, int infd, int outfd, int *flags)
       sighelper(status);
     }
   free(args);
-  memset(newLine, 0, LINELEN);
+  memset(newLine, 0, MAXLEN);
   return retpid;
 }
 
@@ -188,6 +192,14 @@ void sighelper(int status)
 	      printf("%s\n", sys_siglist[sigret]);
 	    }
 	}
+    }
+}
+
+void got_int(int sig)
+{
+  if (sig == SIGINT)
+    {
+      hadsigint = 1;
     }
 }
 
