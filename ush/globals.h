@@ -27,6 +27,3 @@ GLOBAL_VAR (int, gshift, 0);
 GLOBAL_VAR (int, exitv, 0);
 
 GLOBAL_VAR (int, maxLen, 200000);
-
-/* fd[0]: read, fd[1]: write */
-GLOBAL_VAR (int*, fd, NULL);

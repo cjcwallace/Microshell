@@ -65,10 +65,11 @@ int expand (char *orig, char *new, int newsize)
 		}
 	      if ( orig[i] == '$') continue; /* 2 args next to eachother */
 	    }
-	  else if ( orig[i] == '(' )
+	  else if ( orig[i] == '(' ) /* command expansion */
 	    {
 	      int envIndex = i + 1;
 	      int paren = 1;
+	      /* fd[0]: read, fd[1]: write */
 	      int fd[2];
 	      i++;
 
@@ -104,7 +105,6 @@ int expand (char *orig, char *new, int newsize)
 		    {
 		      return -1;
 		    }
-		  readline = read(fd[0], new, newsize);
 		  if ( readline < 0 ) 
 		    {
 		      perror("read");
@@ -114,11 +114,12 @@ int expand (char *orig, char *new, int newsize)
 		    {
 		      fprintf(stderr, "exceeded read limit\n");
 		    }
+		  readline = read(fd[0], new, newsize);		  
 		  j--;
 		}
 	      close(fd[0]);
 	      orig[i - 1] = ')';
-	      if ( orig[i] == 0)
+	      if ( orig[i] == 0 )
 		{
 		  new[j] = 0;
 		  break;
