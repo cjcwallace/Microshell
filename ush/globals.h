@@ -27,3 +27,5 @@ GLOBAL_VAR (int, gshift, 0);
 GLOBAL_VAR (int, exitv, 0);
 
 GLOBAL_VAR (int, maxLen, 200000);
+
+GLOBAL_VAR (int, hadsigint, 0);
