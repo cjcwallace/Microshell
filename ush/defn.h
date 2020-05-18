@@ -13,5 +13,6 @@ int processline(char *line, int infd, int outfd, int *flags);
 int writeNew  (char *new, char *rv, int *j, int newsize);
 
 //void processline(char *line);
+void got_int(int sig);
 void strmode (mode_t mode, char *p);
 void sighelper(int status);

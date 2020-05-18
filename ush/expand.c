@@ -25,8 +25,13 @@ int expand (char *orig, char *new, int newsize)
   int j = 0; /* new pointer */
   char *rv;  /* holds variables from ${name} */
   char *numarg; /* holds value of arg */
-  
-  while ( orig[i] != 0 )
+
+  //fprintf(stdout, "hsi:%d\n",hadsigint);
+  if (hadsigint == 1)
+    {
+      return 0;
+    }
+  while ( orig[i] != 0 && hadsigint == 0)
     {
       if ( orig[i] == '$' )
 	{

@@ -1,3 +1,4 @@
+
 /*  Cameron Wallace
  *  April 14, 2020
  *  CSCI 347 Spring
@@ -228,7 +229,13 @@ int builtIn (char **args, int *argc, int outfd)
   const int size = 7;
   const char *commands[] =
     { "exit", "envset", "envunset", "cd", "shift", "unshift", "sstat" };
-    
+
+  if ( hadsigint == 1 )
+    {
+      exitv = EINTR;
+      return exitv;
+    }
+  
   for ( int i = 0; i < size; i++ )
     {
       if ( strcmp(args[0], commands[i]) == 0 )

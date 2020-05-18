@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <signal.h>
+#include <setjmp.h>
 #include "defn.h"
 #define DEFINE_GLOBALS
 #include "globals.h"
@@ -33,25 +35,38 @@
 
 char **arg_parse(char *line, int *argcptr);
 char *removeQuotes(char *line, int n, int quotes, char **argarr);
-void got_int(int sig); 
+
+/* Globals */
+
+pid_t cpid;
+struct sigaction sa;
+sigjmp_buf jump;
+int setj;
+FILE* infile;
 
 /* Shell main */
-
-FILE* infile;
 int main(int mainargc, char **mainargv)
 {
   char buffer[MAXLEN];
   int len;
- 
+  
+  sa.sa_handler = got_int;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;//SA_RESTART;
+  
   gargc = mainargc;
   gargv = mainargv;
   gshift = 0;
   
   int open = 0;
   
+  if ( sigaction(SIGINT, &sa, NULL) < 0)
+    {
+      fprintf(stderr, "Could not register SIGINT\n");
+      exit(1);
+    }
   while (1)
     {
-      
       if ( mainargc == 1 )
 	{
 	  infile = stdin;
@@ -68,11 +83,11 @@ int main(int mainargc, char **mainargv)
 	      exit(127);
 	    }
 	}
-      
+      hadsigint = 0;
+      setj = sigsetjmp(jump, 1);
       /* prompt and get line */
       if (fgets(buffer, LINELEN, infile) != buffer)
 	break;
-      
       /* Get rid of \n at end of buffer. */
       len = strlen(buffer);
       int i = 0;
@@ -99,19 +114,26 @@ int main(int mainargc, char **mainargv)
       processline(buffer, 0, 1, NULL);
     }
   if (!feof(infile))
-    perror("read");
+   perror("read");
   
   return 0; /* Also known as exit (0); */
 }
 
+void got_int(int sig)
+{
+  if (sig == SIGINT)
+    {
+      hadsigint = 1;
+      if (cpid > 0)
+	kill(cpid, SIGKILL);
+      siglongjmp(jump, 0);
+    }
+}
+
 int processline(char *line, int infd, int outfd, int *flags)
 {
-  pid_t cpid;
   int status;
   int retpid = -1;
-  struct sigaction sa;
-  sa.sa_handler = got_int;
-  sigemptyset(&sa.sa_mask);
   
   char newLine[MAXLEN];
   memset(newLine, 0, MAXLEN);
@@ -164,6 +186,18 @@ int processline(char *line, int infd, int outfd, int *flags)
 	  /* Wait wasn't successful */
 	  perror("wait");
 	}
+      else
+	{
+	  if (gargc > 1 && (strcmp("-r", gargv[1]) == 0))
+	    sa.sa_flags = SA_RESTART;
+	  else
+	    sa.sa_flags = 0;
+	  if (sigaction(SIGINT, &sa, NULL) < 0)
+	    {
+	      fprintf(stderr, "Could not register SIGINT\n");
+	      exit(1);
+	    }
+	}
       sighelper(status);
     }
   free(args);
@@ -192,14 +226,6 @@ void sighelper(int status)
 	      printf("%s\n", sys_siglist[sigret]);
 	    }
 	}
-    }
-}
-
-void got_int(int sig)
-{
-  if (sig == SIGINT)
-    {
-      hadsigint = 1;
     }
 }
 
