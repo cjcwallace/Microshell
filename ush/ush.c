@@ -34,7 +34,6 @@
 char **arg_parse(char *line, int *argcptr);
 char *removeQuotes(char *line, int n, int quotes, char **argarr);
 void signals();
-void signals1();
 
 /* Globals */
 
@@ -54,7 +53,7 @@ int main(int mainargc, char **mainargv)
   
   int open = 0;
   
-  signals1();
+  signals();
   
   while (1)
     {
@@ -110,11 +109,12 @@ int main(int mainargc, char **mainargv)
   return 0; /* Also known as exit (0); */
 }
 
+/* using sigaction(2) */
 void signals()
 {
   sa.sa_handler = got_int;
   sigemptyset(&sa.sa_mask);
-  sa.sa_flags = 0;//SA_RESTART;
+  sa.sa_flags = SA_RESTART;
   if ( sigaction(SIGINT, &sa, NULL) < 0)
     {
       //fprintf(stderr, "Could not register SIGINT\n");
@@ -122,14 +122,7 @@ void signals()
     }
 }
 
-void signals1()
-{
-  if ( signal(SIGINT, got_int) < 0)
-    {
-      fprintf(stderr, "Could not register SIGINT\n");
-    }
-}
-
+/* handle interruption */
 void got_int(int sig)
 {
   if (sig == SIGINT)
