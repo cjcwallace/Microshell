@@ -233,6 +233,7 @@ int builtIn (char **args, int *argc, int outfd)
   if ( hadsigint == 1 )
     {
       exitv = EINTR;
+      hadsigint = 0;
       return exitv;
     }
   
