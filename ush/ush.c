@@ -199,6 +199,7 @@ int processline(char *line, int infd, int outfd, int *flags)
   return retpid;
 }
 
+
 void sighelper(int status)
 {
   if ( WIFEXITED(status) == 1 )
