@@ -137,7 +137,7 @@ int processline(char *line, int infd, int outfd, int flag)
   int rv = 0;
 
   int fd[2];
-  int fd2[2];
+  //  int fd2[2];
   int nextIn;
   
   char newLine[MAXLEN];
@@ -145,18 +145,14 @@ int processline(char *line, int infd, int outfd, int flag)
   if ( flag == 1 )
     {
       int success = expand(line, newLine, MAXLEN);
+      //printf("exp\n");
       if( success == -1 )
 	{
 	  perror("expand");
 	  return -1;
 	}
     }
-  
-  /* start pipes */
-  char *loc = strchr(newLine, '|');
-  if ( loc != NULL)
-    {
-      printf("\nloc:%s\n", loc);
+
       /*
 	pipe p1
 	pl(a, infd, p1[1], noexpand nowait )
@@ -172,26 +168,56 @@ int processline(char *line, int infd, int outfd, int flag)
 	-------------------
 	pl(e, nextIn, outfd, noexpand wait if flags have it )
        */
+  
+  /* start pipes */
+  char *loc = strchr(newLine, '|');
+  if ( loc != NULL ) {  
+    printf("startloc:%s\n", loc);
+    printf("startnL:%s\n", newLine);
+  }
+  char *nextP;
+  if ( loc != NULL || ( flag != 1 && flag != 2) )//|| flag == 0 )
+    {
       printf("found pipe\n");
       if ( pipe(fd) < 0 )  perror("pipe");
+      printf("fd[0]:%d\n", fd[0]);
+      printf("fd[1]:%d\n", fd[1]);
       *loc = 0;
       printf("%s\n", newLine);
+      /*
       processline( newLine, infd, fd[1], 0 );
       close(fd[1]);
+      */
       nextIn = fd[0];
-      *loc = '|';
-      char *nextP = strchr(&loc[1], '|');
-      printf("%s\n", &loc[1]);
+      nextP = strchr(&loc[1], '|');
+      printf("%s:loc1\n", &loc[1]);
       if ( nextP )
 	{
 	  if ( pipe(fd) < 0 ) perror("pipe");
+	  printf("fd[0]:%d\n", fd[0]);
+	  printf("fd[1]:%d\n", fd[1]);
+	  *nextP = 0;
+	  printf("loc:%s\n", &loc[1]);
 	  processline( &loc[1], nextIn, fd[1], 0 );
 	  close(fd[0]);
 	  close(nextIn);
-	  nextIn = fd[0];
+	  //nextIn = fd[0];
+	}
+	else if ( nextP == NULL )
+	{
+	  if ( pipe(fd) < 0 ) perror("pipe");
+	  printf("null\nfd[0]:%d\n", fd[0]);
+	  printf("fd[1]:%d\n", outfd);
+	  processline( &loc[1], nextIn, outfd, 2 );
+	  close(nextIn);
+	  close(fd[0]);
+	  close(fd[1]);
 	}
     }
-
+  if ( flag == 2 )
+    {
+      zombie();
+    }
   
   int argc;
   char **args = arg_parse(newLine, &argc);
