@@ -173,7 +173,8 @@ int processline(char *line, int infd, int outfd, int flag)
        */
   
   /* start pipes */
-  char *loc = strchr(newLine, '|');
+  char *cmd = newLine;
+  char *loc = strchr(cmd, '|');
   char *nextP;
   if ( loc || ( flag != 1 && flag != 2) )//|| flag == 0 )
     {
@@ -250,7 +251,12 @@ int processline(char *line, int infd, int outfd, int flag)
 	    {
 	      perror("dup");
 	      return -1;
-	    }	    
+	    }
+	  if ( dup2(infd, 0) < 0 )
+	    {
+	      perror("dup");
+	      return -1;
+	    }
 	  execvp(*args, args);
 	  /* execlp reurned, wasn't successful */
 	  perror("exec");
