@@ -173,32 +173,17 @@ int processline(char *line, int infd, int outfd, int flag)
   
   /* start pipes */
   char *loc = strchr(newLine, '|');
-  if ( loc != NULL ) {  
-    printf("startloc:%5s\n", loc);
-    printf("startnL :%5s\n", newLine);
-  }
   char *nextP;
-  if ( loc != NULL || ( flag != 1 && flag != 2) )//|| flag == 0 )
+  if ( loc || ( flag != 1 && flag != 2) )//|| flag == 0 )
     {
       printf("found pipe\n");
       if ( pipe(fd) < 0 )  perror("pipe");
-      printf("fd[0]:%d\n", fd[0]);
-      printf("fd[1]:%d\n", fd[1]);
       *loc = 0;
-      //printf("nl  :%4s\n", newLine);
-      /*
-      processline( newLine, infd, fd[1], 0 );
-      close(fd[1]);
-      */
       nextIn = fd[0];
       nextP = strchr(&loc[1], '|');
-      //printf("loc1:%4s\n", &loc[1]);
       if ( nextP )
 	{
 	  if ( pipe(fd) < 0 ) perror("pipe");
-	  printf("fd[0]:%d\n", fd[0]);
-	  printf("fd[1]:%d\n", fd[1]);
-	  //*nextP = 0;
 	  if ( first == 1 )
 	    {
 	      processline( &loc[1], infd, fd[1], 0 );
@@ -219,13 +204,13 @@ int processline(char *line, int infd, int outfd, int flag)
 	  printf("fd[1]:%d\n", outfd);
 	  if ( first == 1 )
 	    {
-	      processline( &loc[1], infd, fd[1], 2 );
+	      processline( &loc[1], infd, outfd, 2 );
 	      close(fd[1]);
 	      close(nextIn);
 	    }
 	  else
 	    {
-	      processline( &loc[1], nextIn, fd[1], 0 );
+	      processline( &loc[1], nextIn, outfd, 2 );
 	      close(fd[1]);
 	      close(nextIn);
 	    }
