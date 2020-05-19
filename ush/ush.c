@@ -135,6 +135,7 @@ void got_int(int sig)
 
 int processline(char *line, int infd, int outfd, int flag)
 {
+  zombie();
   int status;
   int rv = 0;
 
@@ -178,6 +179,7 @@ int processline(char *line, int infd, int outfd, int flag)
     {
       printf("found pipe\n");
       if ( pipe(fd) < 0 )  perror("pipe");
+      cpid = fork();
       *loc = 0;
       nextIn = fd[0];
       nextP = strchr(&loc[1], '|');
@@ -199,9 +201,10 @@ int processline(char *line, int infd, int outfd, int flag)
 	}
       else if ( nextP == NULL )
 	{
-	  if ( pipe(fd) < 0 ) perror("pipe");
-	  printf("null\nfd[0]:%d\n", fd[0]);
-	  printf("fd[1]:%d\n", outfd);
+	  //if ( pipe(fd) < 0 ) perror("pipe");
+	  //cpid = fork();
+	  //printf("null\nfd[0]:%d\n", fd[0]);
+	  //printf("fd[1]:%d\n", outfd);
 	  if ( first == 1 )
 	    {
 	      processline( &loc[1], infd, outfd, 2 );
@@ -215,10 +218,6 @@ int processline(char *line, int infd, int outfd, int flag)
 	      close(nextIn);
 	    }
 	}
-    }
-  if ( flag == 2 )
-    {
-      zombie();
     }
   
   int argc;
@@ -247,15 +246,13 @@ int processline(char *line, int infd, int outfd, int flag)
 	      kill(cpid, SIGINT);
 	    }
 	  /* We are the child! */
-	  
 	  if ( dup2(outfd, 1) < 0 )
 	    {
 	      perror("dup");
 	      return -1;
-	    }
-
+	    }	    
 	  execvp(*args, args);
-	   /* execlp reurned, wasn't successful */
+	  /* execlp reurned, wasn't successful */
 	  perror("exec");
 	  fclose(infile); // avoid a linux stdio bug
 	  exit(127);
@@ -268,6 +265,11 @@ int processline(char *line, int infd, int outfd, int flag)
 	  perror("wait");
 	}
       sighelper(status);
+      if ( flag == 2 )
+	{
+	  //waitpid();
+	  zombie();
+	}
     }
   free(args);
   memset(newLine, 0, MAXLEN);
