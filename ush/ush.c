@@ -32,7 +32,6 @@
 /* Prototypes */
 
 char **arg_parse(char *line, int *argcptr);
-char *removeQuotes(char *line, int n, int quotes, char **argarr);
 void signals();
 
 /* Globals */
@@ -100,7 +99,7 @@ int main(int mainargc, char **mainargv)
 	  i++;
 	}
       /* Run it ... */
-      processline(buffer, 0, 1, NULL);
+      processline(buffer, 0, 1, 1);
     }
   printf("left while\n");
   if (!feof(infile))
@@ -132,30 +131,79 @@ void got_int(int sig)
     }
 }
 
-int processline(char *line, int infd, int outfd, int *flags)
+int processline(char *line, int infd, int outfd, int flag)
 {
   int status;
-  int retpid = -1;
+  int rv = 0;
+
+  int fd[2];
+  int fd2[2];
+  int nextIn;
   
   char newLine[MAXLEN];
   memset(newLine, 0, MAXLEN);
-  int success = expand(line, newLine, MAXLEN);
-  if( success == -1 )
+  if ( flag == 1 )
     {
-      perror("expand");
-      return -1;
+      int success = expand(line, newLine, MAXLEN);
+      if( success == -1 )
+	{
+	  perror("expand");
+	  return -1;
+	}
     }
+  
+  /* start pipes */
+  char *loc = strchr(newLine, '|');
+  if ( loc != NULL)
+    {
+      printf("\nloc:%s\n", loc);
+      /*
+	pipe p1
+	pl(a, infd, p1[1], noexpand nowait )
+	close p1[1]
+	pipe p1
+	nextIn = p1[0]
+	pl(b, nextIn, p1[1], noexpand nowait )
+	close nextIn, p1[1]
+	nextIn = p1[0]
+	pipe p1
+	pl(c, nextIn, p1[1], noexpand nowait )
+	close ....
+	-------------------
+	pl(e, nextIn, outfd, noexpand wait if flags have it )
+       */
+      printf("found pipe\n");
+      if ( pipe(fd) < 0 )  perror("pipe");
+      *loc = 0;
+      printf("%s\n", newLine);
+      processline( newLine, infd, fd[1], 0 );
+      close(fd[1]);
+      nextIn = fd[0];
+      *loc = '|';
+      char *nextP = strchr(&loc[1], '|');
+      printf("%s\n", &loc[1]);
+      if ( nextP )
+	{
+	  if ( pipe(fd) < 0 ) perror("pipe");
+	  processline( &loc[1], nextIn, fd[1], 0 );
+	  close(fd[0]);
+	  close(nextIn);
+	  nextIn = fd[0];
+	}
+    }
+
   
   int argc;
   char **args = arg_parse(newLine, &argc);
 
   if (args == NULL) return -1;
-
+  
   int bi = builtIn(args, &argc, outfd);
   if ( bi != 0 )
     {
       /* Start a new process to do the job. */
       cpid = fork();
+      rv = cpid;
       if (cpid < 0)
 	{
 	  /* Fork wasn't successful */
@@ -171,7 +219,6 @@ int processline(char *line, int infd, int outfd, int *flags)
 	      kill(cpid, SIGINT);
 	    }
 	  /* We are the child! */
-	  retpid = getpid();
 	  
 	  if ( dup2(outfd, 1) < 0 )
 	    {
@@ -196,9 +243,19 @@ int processline(char *line, int infd, int outfd, int *flags)
     }
   free(args);
   memset(newLine, 0, MAXLEN);
-  return retpid;
+  //printf("rv:%d\n", rv);
+  return rv;
 }
 
+int zombie()
+{
+  int pid = waitpid(-1, &cpid, WNOHANG);
+  while (pid > 0)
+    {
+      pid = waitpid(-1, &cpid, WNOHANG);
+    }
+  return pid;
+}
 
 void sighelper(int status)
 {
@@ -222,6 +279,7 @@ void sighelper(int status)
 	    }
 	}
     }
+  fflush(stdout);
 }
 
 char **arg_parse(char *line, int *argcptr)

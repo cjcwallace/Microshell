@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <dirent.h>
+#include <sys/wait.h>
 #include "defn.h"
 #include "globals.h"
 
@@ -25,8 +26,8 @@ int expand (char *orig, char *new, int newsize)
   int j = 0; /* new pointer */
   char *rv;  /* holds variables from ${name} */
   char *numarg; /* holds value of arg */
+  int plrv; /* holds value returned by process line */
 
-  //fprintf(stdout, "hsi:%d\n",hadsigint);
   if (hadsigint == 1)
     {
       return 0;
@@ -95,7 +96,12 @@ int expand (char *orig, char *new, int newsize)
 		  perror("pipe");
 		  return -1;
 		}
-	      processline( &orig[envIndex], 0, fd[1], NULL);
+	      plrv = processline( &orig[envIndex], 0, fd[1], 1);
+	      if ( plrv < 0 )
+		{
+		  fprintf(stderr, "plrv:%d, processline error.\n", plrv);
+		  return -1;
+		}
 	      close(fd[1]);
 
 	      /* Create a buffer that read() will fill, which is then passed
@@ -123,6 +129,13 @@ int expand (char *orig, char *new, int newsize)
 		  j--;
 		}
 	      close(fd[0]);
+
+	      /* wait child process from pl */
+	      if ( plrv > 0 )
+		{
+		  zombie();
+		}
+         
 	      orig[i - 1] = ')';
 	      if ( orig[i] == 0 )
 		{
