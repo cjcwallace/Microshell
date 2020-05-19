@@ -39,8 +39,6 @@ void signals();
 pid_t cpid;
 struct sigaction sa;
 FILE* infile;
-int first = 1;
-
 
 /* Shell main */
 int main(int mainargc, char **mainargv)
@@ -198,20 +196,11 @@ int processline(char *line, int infd, int outfd, int flag)
 	  printf("fd[0]:%d\n", fd[0]);
 	  printf("fd[1]:%d\n", fd[1]);
 	  *nextP = 0;
-	  if ( first == 1 )
-	    {
-	      processline( &loc[1], infd, fd[1], 0 );
-	      first = 0;
-	      close(fd[1]);
-	    }
-	  else
-	    {
-	      processline( &loc[1], nextIn, fd[1], 0 );
-	      close(fd[1]);
-	      close(nextIn);
-	    }
+	  processline( &loc[1], nextIn, fd[1], 0 );
+	  close(fd[1]);
+	  close(nextIn);
 	}
-      else if ( nextP == NULL && first != 1 )
+      else if ( nextP == NULL )
 	{
 	  //if ( pipe(fd) < 0 ) perror("pipe");
 	  printf("null\nfd[0]:%d\n", fd[0]);
