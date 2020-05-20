@@ -41,7 +41,6 @@ struct sigaction sa;
 FILE* infile;
 int first = 1;
 int last = 1;
-int nextIn;
 int fP = 0;
 
 
@@ -172,35 +171,35 @@ int processline(char *line, int infd, int outfd, int flag)
        */
   
   /* start pipes */
-  char *cmd = newLine;
-  printf("cmd:%s\n", cmd);  
+  char *cmd = newLine;  
   char *loc = strchr(cmd, '|');
+  int nextIn;
   if ( loc != NULL )
     {
-      fP = 1;
       *loc = 0;
-      if ( first == 1)
+      printf("cmd:  %s\n", cmd);
+      if ( pipe(fd) < 0 ) perror("pipe");
+      processline(cmd, infd, fd[1], 0 );
+      close(fd[1]);
+      nextIn = fd[0];
+      //first = 0;
+      while ( loc != NULL )
 	{
 	  if ( pipe(fd) < 0 ) perror("pipe");
-	  processline(cmd, 0, fd[1], 0 );
-	  close(fd[1]);
-	  nextIn = fd[0];
-	  first = 0;
-	}
-      else
-	{
 	  cmd = loc + 1;
-	  printf("nextcmd:%s\n", cmd);
-	  if ( pipe(fd) < 0 ) perror("pipe");
+	  loc = strchr(cmd, '|');
+	  //*loc = 0;
+	  printf("ncmd: %s\n", cmd);
+	  printf("loc : %s\n", loc);
 	  processline(cmd, nextIn, fd[1], 0 );
 	  close(fd[1]);
+	  close(nextIn);
 	  nextIn = fd[0];
 	  close(fd[0]);
 	}
-      loc = strchr(cmd, '|');
     }
   
-  if ( loc == NULL && last == 1 && fP == 1 )
+  if ( loc == NULL && last == 1 && fP == 5 )
     {
       last = 0;
       processline( cmd, nextIn, 1, 2 );
