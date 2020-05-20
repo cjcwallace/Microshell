@@ -180,7 +180,7 @@ int processline(char *line, int infd, int outfd, int flag)
   if ( loc != NULL )
     {
       *loc = 0;
-      printf("cmd:  %s\n", cmd);
+      //printf("cmd:  %s\n", cmd);
       if ( pipe(fd) < 0 ) perror("pipe");
       processline(cmd, infd, fd[1], 0 );
       close(fd[1]);
@@ -194,7 +194,7 @@ int processline(char *line, int infd, int outfd, int flag)
       while ( loc != NULL )
 	{
 	  if ( pipe(fd) < 0 ) perror("pipe");
-	  printf("ncmd: %s\n", cmd);
+	  //printf("ncmd: %s\n", cmd);
 	  processline(cmd, nextIn, fd[1], 0 );
 	  close(fd[1]);
 	  close(nextIn);
@@ -206,7 +206,7 @@ int processline(char *line, int infd, int outfd, int flag)
 	      *loc = 0;
 	    }
 	}
-      printf("ncmd: %s\noutfd: %d\n", cmd, outfd);
+      //printf("ncmd: %s\noutfd: %d\n", cmd, outfd);
       processline(cmd, nextIn, outfd, 2 );
       close(nextIn);
       return rv;
@@ -217,11 +217,9 @@ int processline(char *line, int infd, int outfd, int flag)
   
   if (args == NULL) return -1;
 
-  printf("b4bi\n");
   int bi = builtIn(args, &argc, outfd);
   if ( bi != 0 )
     {
-      printf("a4bi\n");
       /* Start a new process to do the job. */
       cpid = fork();
       rv = cpid;
@@ -256,11 +254,9 @@ int processline(char *line, int infd, int outfd, int flag)
 	  fclose(infile); // avoid a linux stdio bug
 	  exit(127);
 	}
-      printf("please\n");
       /* Have the parent wait for child to complete */
       if ( flag == 2 )
 	{
-	  printf("lasty\n");
 	  //if (wait(&status) < 0)
 	  if ( waitpid(cpid, &status, 0) < 0 )
 	    {
