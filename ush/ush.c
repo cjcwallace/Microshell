@@ -266,8 +266,8 @@ int processline(char *line, int infd, int outfd, int flag)
 	    }
 	  zombie();
 	}
-      sighelper(status);
     }
+  sighelper(status);
   free(args);
   memset(newLine, 0, MAXLEN);
   return rv;
