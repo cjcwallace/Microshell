@@ -285,14 +285,11 @@ int zombie()
 
 void sighelper(int status)
 {
-  if ( WIFEXITED(status) == 1 )
+  if ( WIFEXITED(status) )
     {
-      printf("WES=%d\n", WEXITSTATUS(status));
-      printf("status=%d\n", status);
       exitv = WEXITSTATUS(status);
-      printf("ev=%d\n", exitv);
     }
-  if ( WIFSIGNALED(status) == 1 )
+  if ( WIFSIGNALED(status) )
     {
       int sigret = WTERMSIG(status);
       exitv = sigret + 128;
@@ -309,7 +306,6 @@ void sighelper(int status)
 	    }
 	}
     }
-  fflush(stdout);
 }
 
 char **arg_parse(char *line, int *argcptr)
