@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <signal.h>
 #include "defn.h"
 #define DEFINE_GLOBALS
 #include "globals.h"
@@ -180,7 +181,6 @@ int processline(char *line, int infd, int outfd, int flag)
   if ( loc != NULL )
     {
       *loc = 0;
-      //printf("cmd:  %s\n", cmd);
       if ( pipe(fd) < 0 ) perror("pipe");
       processline(cmd, infd, fd[1], 0 );
       close(fd[1]);
@@ -191,10 +191,10 @@ int processline(char *line, int infd, int outfd, int flag)
 	{
 	  *loc = 0;
 	}
+      /* loop until there are no remaining | symbols */
       while ( loc != NULL )
 	{
 	  if ( pipe(fd) < 0 ) perror("pipe");
-	  //printf("ncmd: %s\n", cmd);
 	  processline(cmd, nextIn, fd[1], 0 );
 	  close(fd[1]);
 	  close(nextIn);
@@ -206,7 +206,7 @@ int processline(char *line, int infd, int outfd, int flag)
 	      *loc = 0;
 	    }
 	}
-      //printf("ncmd: %s\noutfd: %d\n", cmd, outfd);
+      /* last piece of the pipe is sent to initial fd */
       processline(cmd, nextIn, outfd, 2 );
       close(nextIn);
       return rv;
@@ -264,10 +264,10 @@ int processline(char *line, int infd, int outfd, int flag)
 	      /* Wait wasn't successful */
 	      perror("wait");
 	    }
-	  zombie();
 	}
+      sighelper(status);
+      zombie();
     }
-  sighelper(status);
   free(args);
   memset(newLine, 0, MAXLEN);
   return rv;
@@ -287,7 +287,10 @@ void sighelper(int status)
 {
   if ( WIFEXITED(status) == 1 )
     {
+      printf("WES=%d\n", WEXITSTATUS(status));
+      printf("status=%d\n", status);
       exitv = WEXITSTATUS(status);
+      printf("ev=%d\n", exitv);
     }
   if ( WIFSIGNALED(status) == 1 )
     {
