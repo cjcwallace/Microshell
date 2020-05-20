@@ -264,8 +264,8 @@ int processline(char *line, int infd, int outfd, int flag)
 	      /* Wait wasn't successful */
 	      perror("wait");
 	    }
+	  sighelper(status);
 	}
-      sighelper(status);
       zombie();
     }
   free(args);
