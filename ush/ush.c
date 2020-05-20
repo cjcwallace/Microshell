@@ -175,52 +175,40 @@ int processline(char *line, int infd, int outfd, int flag)
   /* start pipes */
   char *cmd = newLine;
   char *loc = strchr(cmd, '|');
-  char *nextP;
-  if ( loc || ( flag != 1 && flag != 2) )//|| flag == 0 )
+  pid_t fp;
+  while ( loc != NULL )
     {
-      printf("found pipe\n");
-      if ( pipe(fd) < 0 )  perror("pipe");
-      cpid = fork();
+      printf("loc\n");
       *loc = 0;
-      nextIn = fd[0];
-      nextP = strchr(&loc[1], '|');
-      if ( nextP )
+      if ( first == 1)
 	{
 	  if ( pipe(fd) < 0 ) perror("pipe");
-	  if ( first == 1 )
-	    {
-	      processline( &loc[1], infd, fd[1], 0 );
-	      first = 0;
-	      close(fd[1]);
-	    }
-	  else
-	    {
-	      processline( &loc[1], nextIn, fd[1], 0 );
-	      close(fd[1]);
-	      close(nextIn);
-	    }
+	  //fp = fork();
+	  processline(cmd, infd, fd[1], 0 );
+	  close(fd[1]);
+	  nextIn = fd[0];
+	  first = 0;
 	}
-      else if ( nextP == NULL )
+      else
 	{
-	  //if ( pipe(fd) < 0 ) perror("pipe");
-	  //cpid = fork();
-	  //printf("null\nfd[0]:%d\n", fd[0]);
-	  //printf("fd[1]:%d\n", outfd);
-	  if ( first == 1 )
-	    {
-	      processline( &loc[1], infd, outfd, 2 );
-	      close(fd[1]);
-	      close(nextIn);
-	    }
-	  else
-	    {
-	      processline( &loc[1], nextIn, outfd, 2 );
-	      close(fd[1]);
-	      close(nextIn);
-	    }
+	  cmd = loc + 1;
+	  if ( pipe(fd) < 0 ) perror("pipe");
+	  //fp = fork();
+	  processline(cmd, nextIn, fd[1], 0 );
+	  close(fd[1]);
+	  nextIn = fd[0];
+	  close(fd[0]);
 	}
+      loc = strchr(cmd, '|');
     }
-  
+  if ( loc == NULL )
+    {
+      processline( cmd, nextIn, outfd, 2 );
+      close(nextIn);
+      close(fd[0]);
+      waitpid(cpid, &status, 0);
+    }
+ 
   int argc;
   char **args = arg_parse(newLine, &argc);
 
