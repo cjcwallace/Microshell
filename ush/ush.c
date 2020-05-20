@@ -204,10 +204,9 @@ int processline(char *line, int infd, int outfd, int flag)
 	      *loc = 0;
 	    }
 	}
-      /* last piece of the pipe is sent to initial fd */
+      /* last piece of the pipe is sent to initial outfd */
       processline(cmd, nextIn, outfd, 2 );
       close(nextIn);
-      //close(infd);
       return rv;
     }
   
