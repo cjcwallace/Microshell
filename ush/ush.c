@@ -40,10 +40,6 @@ void signals();
 pid_t cpid;
 struct sigaction sa;
 FILE* infile;
-int first = 1;
-int last = 1;
-int fP = 0;
-
 
 /* Shell main */
 int main(int mainargc, char **mainargv)
@@ -121,6 +117,7 @@ void signals()
   if ( sigaction(SIGINT, &sa, NULL) < 0)
     {
       //fprintf(stderr, "Could not register SIGINT\n");
+      exitv = 1;
       exit(1);
     }
 }
@@ -151,6 +148,7 @@ int processline(char *line, int infd, int outfd, int flag)
       if( success == -1 )
 	{
 	  perror("expand");
+	  exitv = -1;
 	  return -1;
 	}
     }
@@ -209,6 +207,7 @@ int processline(char *line, int infd, int outfd, int flag)
       /* last piece of the pipe is sent to initial fd */
       processline(cmd, nextIn, outfd, 2 );
       close(nextIn);
+      //close(infd);
       return rv;
     }
   
@@ -257,7 +256,6 @@ int processline(char *line, int infd, int outfd, int flag)
       /* Have the parent wait for child to complete */
       if ( flag == 2 )
 	{
-	  //if (wait(&status) < 0)
 	  if ( waitpid(cpid, &status, 0) < 0 )
 	    {
 	      free(args);
