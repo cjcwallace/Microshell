@@ -112,6 +112,7 @@ int expand (char *orig, char *new, int newsize)
 	      int readcount = 0;
 	      while (readline > 0)
 		{
+		  readcount++;
 		  if ( writeNew( new, readbuf, &j, newsize) == -1 )
 		    {
 		      return -1;
@@ -124,6 +125,7 @@ int expand (char *orig, char *new, int newsize)
 		  if ( readcount > 39 )
 		    {
 		      fprintf(stderr, "exceeded read limit\n");
+		      return -1;
 		    }
 		  readline = read(fd[0], new, newsize);		  
 		  j--;
