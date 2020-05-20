@@ -40,6 +40,9 @@ pid_t cpid;
 struct sigaction sa;
 FILE* infile;
 int first = 1;
+int last = 1;
+int nextIn;
+int fP = 0;
 
 
 /* Shell main */
@@ -103,9 +106,8 @@ int main(int mainargc, char **mainargv)
       /* Run it ... */
       processline(buffer, 0, 1, 1);
     }
-  printf("left while\n");
   if (!feof(infile))
-   perror("read");
+    perror("read");
   
   return 0; /* Also known as exit (0); */
 }
@@ -140,15 +142,12 @@ int processline(char *line, int infd, int outfd, int flag)
   int rv = 0;
 
   int fd[2];
-  //  int fd2[2];
-  int nextIn;
   
   char newLine[MAXLEN];
   memset(newLine, 0, MAXLEN);
   if ( flag == 1 )
     {
       int success = expand(line, newLine, MAXLEN);
-      //printf("exp\n");
       if( success == -1 )
 	{
 	  perror("expand");
@@ -174,17 +173,16 @@ int processline(char *line, int infd, int outfd, int flag)
   
   /* start pipes */
   char *cmd = newLine;
+  printf("cmd:%s\n", cmd);  
   char *loc = strchr(cmd, '|');
-  pid_t fp;
-  while ( loc != NULL )
+  if ( loc != NULL )
     {
-      printf("loc\n");
+      fP = 1;
       *loc = 0;
       if ( first == 1)
 	{
 	  if ( pipe(fd) < 0 ) perror("pipe");
-	  //fp = fork();
-	  processline(cmd, infd, fd[1], 0 );
+	  processline(cmd, 0, fd[1], 0 );
 	  close(fd[1]);
 	  nextIn = fd[0];
 	  first = 0;
@@ -192,8 +190,8 @@ int processline(char *line, int infd, int outfd, int flag)
       else
 	{
 	  cmd = loc + 1;
+	  printf("nextcmd:%s\n", cmd);
 	  if ( pipe(fd) < 0 ) perror("pipe");
-	  //fp = fork();
 	  processline(cmd, nextIn, fd[1], 0 );
 	  close(fd[1]);
 	  nextIn = fd[0];
@@ -201,14 +199,17 @@ int processline(char *line, int infd, int outfd, int flag)
 	}
       loc = strchr(cmd, '|');
     }
-  if ( loc == NULL )
+  
+  if ( loc == NULL && last == 1 && fP == 1 )
     {
-      processline( cmd, nextIn, outfd, 2 );
+      last = 0;
+      processline( cmd, nextIn, 1, 2 );
       close(nextIn);
       close(fd[0]);
       waitpid(cpid, &status, 0);
+      return rv;
     }
- 
+
   int argc;
   char **args = arg_parse(newLine, &argc);
 
@@ -235,12 +236,13 @@ int processline(char *line, int infd, int outfd, int flag)
 	      kill(cpid, SIGINT);
 	    }
 	  /* We are the child! */
-	  if ( dup2(outfd, 1) < 0 )
+	  if ( dup2(infd, 0) < 0 )
 	    {
+	      printf("dupout\n");
 	      perror("dup");
 	      return -1;
 	    }
-	  if ( dup2(infd, 0) < 0 )
+	  if ( dup2(outfd, 1) < 0 )
 	    {
 	      perror("dup");
 	      return -1;
@@ -267,7 +269,6 @@ int processline(char *line, int infd, int outfd, int flag)
     }
   free(args);
   memset(newLine, 0, MAXLEN);
-  //printf("rv:%d\n", rv);
   return rv;
 }
 
