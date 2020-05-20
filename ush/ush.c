@@ -23,6 +23,10 @@
 #include "defn.h"
 #define DEFINE_GLOBALS
 #include "globals.h"
+#define WAIT 1
+#define EXPAND 2
+#define NOWAIT 0
+#define NOEXPAND 0
 
 
 /* Constants */
@@ -206,7 +210,6 @@ int processline(char *line, int infd, int outfd, int flag)
 	}
       /* last piece of the pipe is sent to initial outfd */
       processline(cmd, nextIn, outfd, 2 );
-      close(nextIn);
       return rv;
     }
   
