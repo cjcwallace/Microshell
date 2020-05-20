@@ -153,6 +153,9 @@ int processline(char *line, int infd, int outfd, int flag)
 	  return -1;
 	}
     }
+  else {
+    strncpy(newLine, line, MAXLEN);
+  }
 
       /*
 	pipe p1
@@ -182,41 +185,43 @@ int processline(char *line, int infd, int outfd, int flag)
       processline(cmd, infd, fd[1], 0 );
       close(fd[1]);
       nextIn = fd[0];
-      //first = 0;
+ 
+      cmd = loc + 1;
+      if ( (loc = strchr(cmd, '|')) != NULL )
+	{
+	  *loc = 0;
+	}
       while ( loc != NULL )
 	{
 	  if ( pipe(fd) < 0 ) perror("pipe");
-	  cmd = loc + 1;
-	  loc = strchr(cmd, '|');
-	  //*loc = 0;
 	  printf("ncmd: %s\n", cmd);
-	  printf("loc : %s\n", loc);
 	  processline(cmd, nextIn, fd[1], 0 );
 	  close(fd[1]);
 	  close(nextIn);
 	  nextIn = fd[0];
-	  close(fd[0]);
+
+	  cmd = loc + 1;
+	  if ( (loc = strchr(cmd, '|')) != NULL )
+	    {
+	      *loc = 0;
+	    }
 	}
-    }
-  
-  if ( loc == NULL && last == 1 && fP == 5 )
-    {
-      last = 0;
-      processline( cmd, nextIn, 1, 2 );
+      printf("ncmd: %s\noutfd: %d\n", cmd, outfd);
+      processline(cmd, nextIn, outfd, 2 );
       close(nextIn);
-      close(fd[0]);
-      waitpid(cpid, &status, 0);
       return rv;
     }
-
+  
   int argc;
   char **args = arg_parse(newLine, &argc);
-
-  if (args == NULL) return -1;
   
+  if (args == NULL) return -1;
+
+  printf("b4bi\n");
   int bi = builtIn(args, &argc, outfd);
   if ( bi != 0 )
     {
+      printf("a4bi\n");
       /* Start a new process to do the job. */
       cpid = fork();
       rv = cpid;
@@ -237,7 +242,6 @@ int processline(char *line, int infd, int outfd, int flag)
 	  /* We are the child! */
 	  if ( dup2(infd, 0) < 0 )
 	    {
-	      printf("dupout\n");
 	      perror("dup");
 	      return -1;
 	    }
@@ -252,19 +256,21 @@ int processline(char *line, int infd, int outfd, int flag)
 	  fclose(infile); // avoid a linux stdio bug
 	  exit(127);
 	}
+      printf("please\n");
       /* Have the parent wait for child to complete */
-      if (wait(&status) < 0)
-	{
-	  free(args);
-	  /* Wait wasn't successful */
-	  perror("wait");
-	}
-      sighelper(status);
       if ( flag == 2 )
 	{
-	  //waitpid();
+	  printf("lasty\n");
+	  //if (wait(&status) < 0)
+	  if ( waitpid(cpid, &status, 0) < 0 )
+	    {
+	      free(args);
+	      /* Wait wasn't successful */
+	      perror("wait");
+	    }
 	  zombie();
 	}
+      sighelper(status);
     }
   free(args);
   memset(newLine, 0, MAXLEN);
