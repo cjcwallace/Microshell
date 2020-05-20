@@ -295,13 +295,14 @@ void sighelper(int status)
       exitv = sigret + 128;
       if ( sigret != 2 )
 	{
+	  const char *retstr = sys_siglist[sigret];
 	  if ( WCOREDUMP(status) )
 	    {
-	      printf("%s (core dumped)\n", sys_siglist[sigret]);
+	      printf("%s (core dumped)\n", retstr);
 	    }
 	  else
 	    {
-	      printf("%s\n", sys_siglist[sigret]);
+	      printf("%s\n", retstr);
 	    }
 	}
     }
