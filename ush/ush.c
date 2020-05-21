@@ -28,7 +28,6 @@
 #define NOWAIT 0
 #define NOEXPAND 0
 
-
 /* Constants */
 
 #define LINELEN 1024
