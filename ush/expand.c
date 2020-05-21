@@ -13,6 +13,7 @@
 #include <sys/wait.h>
 #include "defn.h"
 #include "globals.h"
+#define WAIT 1
 
    /* newsize default 1024 */
    /* orig: input string, scan only once */
@@ -96,27 +97,28 @@ int expand (char *orig, char *new, int newsize)
 		  perror("pipe");
 		  return -1;
 		}
-	      plrv = processline( &orig[envIndex], 0, fd[1], 1);
+	      plrv = processline( &orig[envIndex], 0, fd[1], 2);
+	      close(fd[1]);
 	      if ( plrv < 0 )
 		{
 		  fprintf(stderr, "plrv:%d, processline error.\n", plrv);
 		  return -1;
 		}
-	      close(fd[1]);
 
 	      /* Create a buffer that read() will fill, which is then passed
 	       * to new. */
 	      
 	      char readbuf[newsize];
-	      int readline = read(fd[0], readbuf, newsize);
+	      int readline = read(fd[0], readbuf, 1024);
 	      int readcount = 0;
 	      while (readline > 0)
 		{
 		  readcount++;
-		  if ( writeNew( new, readbuf, &j, newsize) == -1 )
+		  if ( writeNew( new, readbuf, &j, 1024) == -1 )
 		    {
 		      return -1;
 		    }
+		  readline = read(fd[0], readbuf, 1024);
 		  if ( readline < 0 ) 
 		    {
 		      perror("read");
@@ -127,11 +129,11 @@ int expand (char *orig, char *new, int newsize)
 		      fprintf(stderr, "exceeded read limit\n");
 		      return -1;
 		    }
-		  readline = read(fd[0], new, newsize);		  
 		  j--;
+		  fflush(stdout);
 		}
 	      close(fd[0]);
-
+	      close(fd[1]);
 	      /* wait child process from pl */
 	      if ( plrv > 0 )
 		{

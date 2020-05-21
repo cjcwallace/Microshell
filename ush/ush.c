@@ -184,7 +184,7 @@ int processline(char *line, int infd, int outfd, int flag)
     {
       *loc = 0;
       if ( pipe(fd) < 0 ) perror("pipe");
-      processline(cmd, infd, fd[1], 0 );
+      processline(cmd, infd, fd[1], NOWAIT | NOEXPAND );
       close(fd[1]);
       nextIn = fd[0];
  
@@ -197,7 +197,7 @@ int processline(char *line, int infd, int outfd, int flag)
       while ( loc != NULL )
 	{
 	  if ( pipe(fd) < 0 ) perror("pipe");
-	  processline(cmd, nextIn, fd[1], NOWAIT);
+	  processline(cmd, nextIn, fd[1], NOWAIT | NOEXPAND );
 	  close(fd[1]);
 	  close(nextIn);
 	  nextIn = fd[0];
@@ -210,6 +210,8 @@ int processline(char *line, int infd, int outfd, int flag)
 	}
       /* last piece of the pipe is sent to initial outfd */
       processline(cmd, nextIn, outfd, NOEXPAND | WAIT);
+      close(fd[0]);
+      close(fd[1]);
       return rv;
     }
   
@@ -258,6 +260,7 @@ int processline(char *line, int infd, int outfd, int flag)
       /* Have the parent wait for child to complete */
       if ( flag&WAIT )
 	{
+	  printf("wait\n");
 	  if ( waitpid(cpid, &status, 0) < 0 )
 	    {
 	      free(args);
