@@ -138,6 +138,7 @@ void got_int(int sig)
 int processline(char *line, int infd, int outfd, int flag)
 {
   zombie();
+  //printf("line:%s\n", line);
   int status;
   int rv = 0;
 

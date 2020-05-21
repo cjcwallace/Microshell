@@ -110,7 +110,7 @@ int expand (char *orig, char *new, int newsize)
 	      
 	      char readbuf[newsize];
 	      //int readline = read(fd[0], readbuf, newsize);
-	      int readline = read(fd[0], readbuf, 1);
+	      int readline = read(fd[0], readbuf, 10);
 	      int nl;
 	      while (readline > 0)
 		{
@@ -124,7 +124,7 @@ int expand (char *orig, char *new, int newsize)
 		    {
 		      return -1;
 		    }
-		  readline = read(fd[0], readbuf, 1);
+		  readline = read(fd[0], readbuf, 10);
 		  if ( readline < 0 ) 
 		    {
 		      perror("read");
@@ -137,13 +137,13 @@ int expand (char *orig, char *new, int newsize)
 	      if ( plrv > 0 )
 		{
 		  zombie();
-		  //sighelper();
 		}
-	      orig[i - 1] = ')';
 	      if ( nl )
 		{
 		  j--;
 		}
+	      orig[i - 1] = ')';
+	      //printf("orig:%s \nnew:%s\n",orig, new);
 	      if ( orig[i] == 0 )
 		{
 		  new[j] = 0;
@@ -347,10 +347,10 @@ int writeNew (char *new, char *rv, int *j, int newsize)
     {
       if ( *j > newsize )
 	{
-	  fprintf(stderr, "2buffer overflow\n");
+	  fprintf(stderr, "buffer overflow\n");
 	  return -1;
 	}
-      //printf("rv:%s\n", rv);
+      //printf("rv:%s\n", rv);   
       /*
       if ( rv[a] == '\n' )
 	{

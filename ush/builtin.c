@@ -39,7 +39,7 @@ void bi_exit( char **args, int *argc )
 /* Set environment variables */
 void bi_envset( char **args, int *argc )
 {
-  if ( *argc != 3 )
+  if ( *argc != 3 )//3
     {
       fprintf(stderr, "usage: envset name value\n");
       exitv = 1;
