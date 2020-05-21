@@ -110,21 +110,28 @@ int expand (char *orig, char *new, int newsize)
 	      
 	      char readbuf[newsize];
 	      //int readline = read(fd[0], readbuf, newsize);
-	      int readline = read(fd[0], readbuf, 2);
+	      int readline = read(fd[0], readbuf, 1);
+	      readbuf[1] = 0;
+	      //printf("readbuf:%s\n", readbuf);
 	      int nl;
 	      while (readline > 0)
 		{
 		  nl = 0;
-		  if ( readbuf[readline - 1] == '\n' )
+		  if ( readbuf[0] == '\n' )
 		    {
-		      readbuf[readline - 1] = ' ';
+		      readbuf[0] = ' ';
 		      nl = 1;
 		    }
-		  if ( writeNew( new, readbuf, &j, newsize) == -1 )
+		  readbuf[1] = 0;
+		  if (readline != 0)
 		    {
-		      return -1;
+		      if ( writeNew( new, readbuf, &j, newsize) == -1 )
+			{
+			  return -1;
+			}
 		    }
-		  readline = read(fd[0], readbuf, 2);
+		  readline = read(fd[0], readbuf, 1);
+		  //printf("readbuf:%s\n", readbuf);
 		  if ( readline < 0 ) 
 		    {
 		      perror("read");
@@ -132,7 +139,6 @@ int expand (char *orig, char *new, int newsize)
 		    }
 		}
 	      close(fd[0]);
-	      close(fd[1]);
 	      /* wait child process from pl */
 	      if ( plrv > 0 )
 		{
