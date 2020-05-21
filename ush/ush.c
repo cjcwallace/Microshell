@@ -281,12 +281,13 @@ int processline(char *line, int infd, int outfd, int flag)
 
 int zombie()
 {
-  int pid = waitpid(-1, &cpid, WNOHANG);
+  int status;
+  int pid = waitpid(-1, &status, WNOHANG);
   while (pid > 0)
     {
-      pid = waitpid(-1, &cpid, WNOHANG);
+      pid = waitpid(-1, &status, WNOHANG);
     }
-  return cpid;
+  return status;
 }
 
 void sighelper(int status)
