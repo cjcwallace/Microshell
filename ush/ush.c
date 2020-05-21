@@ -265,12 +265,12 @@ int processline(char *line, int infd, int outfd, int flag)
 	      /* Wait wasn't successful */
 	      perror("wait");
 	    }
-	  sighelper(status);
 	}
       if ( !flag&WAIT )
 	{
 	  rv = cpid;
 	}
+      sighelper(status);
       zombie();
     }
   free(args);

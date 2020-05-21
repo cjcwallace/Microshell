@@ -109,7 +109,7 @@ int expand (char *orig, char *new, int newsize)
 	       * to new. */
 	      
 	      char readbuf[newsize];
-	      int readline = read(fd[0], readbuf, 1024);
+	      int readline = read(fd[0], readbuf, newsize);
 	      int readcount = 0;
 	      int nl;
 	      while (readline > 0)
@@ -121,11 +121,11 @@ int expand (char *orig, char *new, int newsize)
 		      readbuf[readline - 1] = ' ';
 		      nl = 1;
 		    }
-		  if ( writeNew( new, readbuf, &j, 1024) == -1 )
+		  if ( writeNew( new, readbuf, &j, newsize) == -1 )
 		    {
 		      return -1;
 		    }
-		  readline = read(fd[0], readbuf, 1024);
+		  readline = read(fd[0], readbuf, newsize);
 		  if ( readline < 0 ) 
 		    {
 		      perror("read");
@@ -136,7 +136,7 @@ int expand (char *orig, char *new, int newsize)
 		      fprintf(stderr, "exceeded read limit\n");
 		      return -1;
 		    }
-		  fflush(stdout);
+		  //fflush(stdout);
 		}
 	      close(fd[0]);
 	      close(fd[1]);
@@ -334,7 +334,7 @@ int expand (char *orig, char *new, int newsize)
 	    }
 	  closedir(d);
 	}
-      if ( j >= newsize ) /* Check to ensure we still have space */
+      if ( j > newsize ) /* Check to ensure we still have space */
 	{
 	  fprintf(stderr, "buffer overflow\n");
 	  return -1;
@@ -351,7 +351,7 @@ int writeNew (char *new, char *rv, int *j, int newsize)
     {
       if ( *j > newsize )
 	{
-	  fprintf(stderr, "buffer overflow\n");
+	  fprintf(stderr, "2buffer overflow\n");
 	  return -1;
 	}
       /*
