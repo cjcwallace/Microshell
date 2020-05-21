@@ -260,7 +260,6 @@ int processline(char *line, int infd, int outfd, int flag)
       /* Have the parent wait for child to complete */
       if ( flag&WAIT )
 	{
-	  printf("wait\n");
 	  if ( waitpid(cpid, &status, 0) < 0 )
 	    {
 	      free(args);
