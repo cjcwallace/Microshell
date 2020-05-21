@@ -168,7 +168,7 @@ void bi_sstat( char **args, int *argc, int outfd )
 	  struct stat st;
 	  if ( stat(fName, &st) != 0 )
 	    {
-	      printf("%s: No such file or directory\n", fName);
+	      fprintf(stderr, "%s: No such file or directory\n", fName);
 	      exitv = 1;
 	      i++;
 	      continue;

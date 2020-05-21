@@ -111,9 +111,16 @@ int expand (char *orig, char *new, int newsize)
 	      char readbuf[newsize];
 	      int readline = read(fd[0], readbuf, 1024);
 	      int readcount = 0;
+	      int nl;
 	      while (readline > 0)
 		{
 		  readcount++;
+		  nl = 0;
+		  if ( readbuf[readline - 1] == '\n' )
+		    {
+		      readbuf[readline - 1] = ' ';
+		      nl = 1;
+		    }
 		  if ( writeNew( new, readbuf, &j, 1024) == -1 )
 		    {
 		      return -1;
@@ -129,7 +136,6 @@ int expand (char *orig, char *new, int newsize)
 		      fprintf(stderr, "exceeded read limit\n");
 		      return -1;
 		    }
-		  j--;
 		  fflush(stdout);
 		}
 	      close(fd[0]);
@@ -140,8 +146,8 @@ int expand (char *orig, char *new, int newsize)
 		  zombie();
 		  //sighelper();
 		}
-         
 	      orig[i - 1] = ')';
+	      if ( nl ) j--;
 	      if ( orig[i] == 0 )
 		{
 		  new[j] = 0;
@@ -348,10 +354,12 @@ int writeNew (char *new, char *rv, int *j, int newsize)
 	  fprintf(stderr, "buffer overflow\n");
 	  return -1;
 	}
+      /*
       if ( rv[a] == '\n' )
 	{
 	  rv[a] = ' ';
 	}
+      */
       new[*j] = rv[a++];
       *j = *j + 1;
     }
