@@ -78,7 +78,7 @@ int main(int mainargc, char **mainargv)
 	    }
 	}
       /* prompt and get line */
-      if (fgets(buffer, LINELEN, infile) != buffer)
+      if (fgets(buffer, MAXLEN, infile) != buffer)
 	break;
       /* Get rid of \n at end of buffer. */
       len = strlen(buffer);
@@ -224,7 +224,7 @@ int processline(char *line, int infd, int outfd, int flag)
     {
       /* Start a new process to do the job. */
       cpid = fork();
-      rv = cpid;
+      //rv = cpid;
       if (cpid < 0)
 	{
 	  /* Fork wasn't successful */
@@ -251,6 +251,7 @@ int processline(char *line, int infd, int outfd, int flag)
 	      return -1;
 	    }
 	  execvp(*args, args);
+	  printf("args:%s\n", *args);
 	  /* execlp reurned, wasn't successful */
 	  perror("exec");
 	  fclose(infile); // avoid a linux stdio bug
@@ -265,12 +266,12 @@ int processline(char *line, int infd, int outfd, int flag)
 	      /* Wait wasn't successful */
 	      perror("wait");
 	    }
+	  sighelper(status);
 	}
       if ( !flag&WAIT )
 	{
 	  rv = cpid;
 	}
-      sighelper(status);
       zombie();
     }
   free(args);
