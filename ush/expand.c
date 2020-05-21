@@ -110,7 +110,7 @@ int expand (char *orig, char *new, int newsize)
 	      
 	      char readbuf[newsize];
 	      //int readline = read(fd[0], readbuf, newsize);
-	      int readline = read(fd[0], readbuf, 10);
+	      int readline = read(fd[0], readbuf, 2);
 	      int nl;
 	      while (readline > 0)
 		{
@@ -124,7 +124,7 @@ int expand (char *orig, char *new, int newsize)
 		    {
 		      return -1;
 		    }
-		  readline = read(fd[0], readbuf, 10);
+		  readline = read(fd[0], readbuf, 2);
 		  if ( readline < 0 ) 
 		    {
 		      perror("read");
