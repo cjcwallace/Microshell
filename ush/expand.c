@@ -109,10 +109,8 @@ int expand (char *orig, char *new, int newsize)
 	       * to new. */
 	      
 	      char readbuf[newsize];
-	      //int readline = read(fd[0], readbuf, newsize);
 	      int readline = read(fd[0], readbuf, 1);
 	      readbuf[1] = 0;
-	      //printf("readbuf:%s\n", readbuf);
 	      int nl;
 	      while (readline > 0)
 		{
@@ -131,7 +129,6 @@ int expand (char *orig, char *new, int newsize)
 			}
 		    }
 		  readline = read(fd[0], readbuf, 1);
-		  //printf("readbuf:%s\n", readbuf);
 		  if ( readline < 0 ) 
 		    {
 		      perror("read");
@@ -142,14 +139,14 @@ int expand (char *orig, char *new, int newsize)
 	      /* wait child process from pl */
 	      if ( plrv > 0 )
 		{
-		  zombie();
+		  int status = zombie();
+		  sighelper(status);
 		}
 	      if ( nl )
 		{
 		  j--;
 		}
 	      orig[i - 1] = ')';
-	      //printf("orig:%s \nnew:%s\n",orig, new);
 	      if ( orig[i] == 0 )
 		{
 		  new[j] = 0;

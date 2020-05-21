@@ -138,7 +138,6 @@ void got_int(int sig)
 int processline(char *line, int infd, int outfd, int flag)
 {
   zombie();
-  //printf("line:%s\n", line);
   int status;
   int rv = 0;
 
@@ -151,7 +150,7 @@ int processline(char *line, int infd, int outfd, int flag)
       int success = expand(line, newLine, MAXLEN);
       if( success == -1 )
 	{
-	  perror("expand");
+	  //perror("expand");
 	  exitv = -1;
 	  return -1;
 	}
@@ -225,7 +224,7 @@ int processline(char *line, int infd, int outfd, int flag)
     {
       /* Start a new process to do the job. */
       cpid = fork();
-      //rv = cpid;
+      rv = cpid;
       if (cpid < 0)
 	{
 	  /* Fork wasn't successful */
@@ -287,12 +286,16 @@ int zombie()
     {
       pid = waitpid(-1, &cpid, WNOHANG);
     }
-  return pid;
+  return cpid;
 }
 
 void sighelper(int status)
 {
-  if ( WIFSIGNALED(status) )
+  if ( WIFEXITED(status) )
+    {
+      exitv = WEXITSTATUS(status);
+    }
+  else if ( WIFSIGNALED(status) )
     {
       int sigret = WTERMSIG(status);
       exitv = sigret + 128;
@@ -308,10 +311,6 @@ void sighelper(int status)
 	      printf("%s\n", retstr);
 	    }
 	}
-    }
-    if ( WIFEXITED(status) )
-    {
-      exitv = WEXITSTATUS(status);
     }
   fflush(stdout);
 }
