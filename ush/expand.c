@@ -136,6 +136,7 @@ int expand (char *orig, char *new, int newsize)
 	      if ( plrv > 0 )
 		{
 		  zombie();
+		  //sighelper();
 		}
          
 	      orig[i - 1] = ')';

@@ -104,7 +104,7 @@ int main(int mainargc, char **mainargv)
 	  i++;
 	}
       /* Run it ... */
-      processline(buffer, 0, 1, 1);
+      processline(buffer, 0, 1, WAIT | EXPAND);
     }
   if (!feof(infile))
     perror("read");
@@ -146,7 +146,7 @@ int processline(char *line, int infd, int outfd, int flag)
   
   char newLine[MAXLEN];
   memset(newLine, 0, MAXLEN);
-  if ( flag == 1 )
+  if ( flag&EXPAND )
     {
       int success = expand(line, newLine, MAXLEN);
       if( success == -1 )
@@ -197,7 +197,7 @@ int processline(char *line, int infd, int outfd, int flag)
       while ( loc != NULL )
 	{
 	  if ( pipe(fd) < 0 ) perror("pipe");
-	  processline(cmd, nextIn, fd[1], 0 );
+	  processline(cmd, nextIn, fd[1], NOWAIT);
 	  close(fd[1]);
 	  close(nextIn);
 	  nextIn = fd[0];
@@ -209,7 +209,7 @@ int processline(char *line, int infd, int outfd, int flag)
 	    }
 	}
       /* last piece of the pipe is sent to initial outfd */
-      processline(cmd, nextIn, outfd, 2 );
+      processline(cmd, nextIn, outfd, NOEXPAND | WAIT);
       return rv;
     }
   
@@ -256,7 +256,7 @@ int processline(char *line, int infd, int outfd, int flag)
 	  exit(127);
 	}
       /* Have the parent wait for child to complete */
-      if ( flag == 2 )
+      if ( flag&WAIT )
 	{
 	  if ( waitpid(cpid, &status, 0) < 0 )
 	    {
@@ -265,6 +265,10 @@ int processline(char *line, int infd, int outfd, int flag)
 	      perror("wait");
 	    }
 	  sighelper(status);
+	}
+      if ( !flag&WAIT )
+	{
+	  rv = cpid;
 	}
       zombie();
     }
@@ -285,15 +289,11 @@ int zombie()
 
 void sighelper(int status)
 {
-  if ( WIFEXITED(status) )
-    {
-      exitv = WEXITSTATUS(status);
-    }
   if ( WIFSIGNALED(status) )
     {
       int sigret = WTERMSIG(status);
       exitv = sigret + 128;
-      if ( sigret != 2 )
+      if ( status != 2 )
 	{
 	  const char *retstr = sys_siglist[sigret];
 	  if ( WCOREDUMP(status) )
@@ -306,6 +306,11 @@ void sighelper(int status)
 	    }
 	}
     }
+    if ( WIFEXITED(status) )
+    {
+      exitv = WEXITSTATUS(status);
+    }
+  fflush(stdout);
 }
 
 char **arg_parse(char *line, int *argcptr)
