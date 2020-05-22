@@ -139,8 +139,11 @@ int expand (char *orig, char *new, int newsize)
 	      /* wait child process from pl */
 	      if ( plrv > 0 )
 		{
-		  int status = zombie();
-		  sighelper(status);
+		  int status;
+		  if (waitpid(-1, &status, 0) >= 0 )
+		    {
+		      sighelper(status);
+		    }
 		}
 	      if ( nl )
 		{
