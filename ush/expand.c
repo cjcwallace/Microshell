@@ -140,7 +140,7 @@ int expand (char *orig, char *new, int newsize)
 	      if ( plrv > 0 )
 		{
 		  int status;
-		  if (waitpid(-1, &status, 0) >= 0 )
+		  if (waitpid(-1, &status, 0) > -1 )
 		    {
 		      sighelper(status);
 		    }
