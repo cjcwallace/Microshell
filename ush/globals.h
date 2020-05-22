@@ -1,7 +1,7 @@
 /* Cameron Wallace
  * April 29, 2020
  * CSCI 347 Spring
- * Assignment 3
+ * Assignment 4
  */
 
 #pragma once

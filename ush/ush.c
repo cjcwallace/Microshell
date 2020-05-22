@@ -1,7 +1,7 @@
 /*   Cameron Wallace
  *   April 1, 2020
  *   CSCI 347 Spring 2020
- *   Assignment 2
+ *   Assignment 4
  *
  *   CS 352 -- Micro Shell!  
  *
@@ -119,7 +119,6 @@ void signals()
   sa.sa_flags = SA_RESTART;
   if ( sigaction(SIGINT, &sa, NULL) < 0)
     {
-      //fprintf(stderr, "Could not register SIGINT\n");
       exitv = 1;
       exit(1);
     }
@@ -145,12 +144,14 @@ int processline(char *line, int infd, int outfd, int flag)
   
   char newLine[MAXLEN];
   memset(newLine, 0, MAXLEN);
+
+  /* the initial call is expanded, and subsequent calls are simply
+     copied to avoid repeat expansion. */
   if ( flag&EXPAND )
     {
       int success = expand(line, newLine, MAXLEN);
       if( success == -1 )
 	{
-	  //perror("expand");
 	  exitv = -1;
 	  return -1;
 	}
@@ -158,33 +159,23 @@ int processline(char *line, int infd, int outfd, int flag)
   else {
     strncpy(newLine, line, MAXLEN);
   }
-
-      /*
-	pipe p1
-	pl(a, infd, p1[1], noexpand nowait )
-	close p1[1]
-	pipe p1
-	nextIn = p1[0]
-	pl(b, nextIn, p1[1], noexpand nowait )
-	close nextIn, p1[1]
-	nextIn = p1[0]
-	pipe p1
-	pl(c, nextIn, p1[1], noexpand nowait )
-	close ....
-	-------------------
-	pl(e, nextIn, outfd, noexpand wait if flags have it )
-       */
   
   /* start pipes */
-  char *cmd = newLine;  
+  char *cmd = newLine;
   char *loc = strchr(cmd, '|');
   int nextIn;
+
+  /* the main while will send individual pipes recursively to processline
+     until there are no more | symbols. when this condition is met
+     the final pipe is sent to process line using outfd and all open
+     file descriptors are closed. */
   if ( loc != NULL )
     {
       *loc = 0;
       if ( pipe(fd) < 0 ) perror("pipe");
       processline(cmd, infd, fd[1], NOWAIT | NOEXPAND );
       close(fd[1]);
+      
       nextIn = fd[0];
  
       cmd = loc + 1;
@@ -199,6 +190,7 @@ int processline(char *line, int infd, int outfd, int flag)
 	  processline(cmd, nextIn, fd[1], NOWAIT | NOEXPAND );
 	  close(fd[1]);
 	  close(nextIn);
+	  
 	  nextIn = fd[0];
 
 	  cmd = loc + 1;
@@ -279,6 +271,8 @@ int processline(char *line, int infd, int outfd, int flag)
   return rv;
 }
 
+/* used to kill zombie processes 
+   return: int value to be passed to signal helper */
 int zombie()
 {
   int status;
@@ -290,6 +284,8 @@ int zombie()
   return status;
 }
 
+/* checks the wait status and assigns appropriate exit 
+   values, along with printing status messages */
 void sighelper(int status)
 {
   if ( WIFEXITED(status) )

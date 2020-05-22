@@ -1,10 +1,10 @@
 /* Cameron Wallace
  * April 29
  * CSCI 347 Spring
- * Assignment 3
+ * Assignment 4
  * The entirety of this code was provided to me, I 
  * did not write any of it. This file was used
- * for Assignment 3 of CSCI 347 Spring at WWU
+ * for Assignment 4 of CSCI 347 Spring at WWU
  */
 
 /*	$NetBSD: strmode.c,v 1.19 2012/06/25 22:32:46 abs Exp $	*/

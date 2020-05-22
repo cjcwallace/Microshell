@@ -1,7 +1,7 @@
 /*  Cameron Wallace
  *  April 14, 2020
  *  CSCI 347 Spring 2020
- *  Assignment 2
+ *  Assignment 4
  */
 
 #include <stdio.h>
@@ -356,13 +356,6 @@ int writeNew (char *new, char *rv, int *j, int newsize)
 	  fprintf(stderr, "buffer overflow\n");
 	  return -1;
 	}
-      //printf("rv:%s\n", rv);   
-      /*
-      if ( rv[a] == '\n' )
-	{
-	  rv[a] = ' ';
-	}
-      */
       new[*j] = rv[a++];
       *j = *j + 1;
     }

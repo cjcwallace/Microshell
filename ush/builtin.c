@@ -1,8 +1,7 @@
-
 /*  Cameron Wallace
  *  April 14, 2020
  *  CSCI 347 Spring
- *  Assignment 2
+ *  Assignment 4
  */
 
 #include <stdio.h>
@@ -39,7 +38,7 @@ void bi_exit( char **args, int *argc )
 /* Set environment variables */
 void bi_envset( char **args, int *argc )
 {
-  if ( *argc != 3 )//3
+  if ( *argc != 3 )
     {
       fprintf(stderr, "usage: envset name value\n");
       exitv = 1;
@@ -185,7 +184,6 @@ void bi_sstat( char **args, int *argc, int outfd )
 	      char *fTime = asctime(localtime(&st.st_mtime));
 	      dprintf(outfd,"%s %s %s %s%ld %ld %s",
 		      fName, uName, gName, fPermissions, fLinks, fSize, fTime);
-	      //fflush(stdout);
 	      i++;
 	    }
 	}
@@ -219,6 +217,7 @@ char * getGroup( struct stat st )
 }
 
 typedef void (*bicommands) ();
+
 /* Store functions for built in commands */
 bicommands cmd[] =
   { &bi_exit, &bi_envset, &bi_envunset, &bi_cd,
