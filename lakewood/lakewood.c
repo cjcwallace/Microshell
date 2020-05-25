@@ -10,13 +10,23 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-#ifndef N
-#define N 5
-#endif
+#include <time.h>
+#include <stdbool.h>
 
 long global_data = 0;
 pthread_mutex_t mutex1;
+
+/* Globals */
+
+int rate;
+int sleepv;
+int rnGen;
+
+int freeJackets = 10;
+char *crafts[] = {"kayak", "canoe", "boat"};
+int costs[] = {1, 2, 4};
+
+int line = 0;
 
 /* Prototypes */
 void getJackets();
@@ -34,7 +44,81 @@ void fatal (long n) {
   exit(n);
 }
 
-void * thread_body ( void *arg ) {
+struct group {
+  int gnum;
+  int selection = random() % 3;
+  char *craft = crafts[selection];
+  int jackets = costs[selection];
+  
+};
+
+struct queue {
+  struct group *head;
+  struct group *tail;
+};
+
+void queue_init (struct queue *queue)
+{
+  queue->head = NULL;
+  queue->tail = NULL;
+}
+
+bool queue_isEmpty (struct queue *queue)
+{
+  return queue->head == NULL;
+}
+
+void queue_insert (struct queue* queue, int value)
+{
+  struct group *tmp = malloc(sizeof(struct group));
+  if (tmp == NULL)
+    {
+      fputs ("malloc gailed\n", stderr);
+      exit(1);
+    }
+
+  tmp->data = value;
+  tmp->next = NULL;
+
+  if (queue->head == NULL)
+    {
+      queue->head = tmp;
+    } else
+    {
+      queue->tail->next = tmp;
+    }
+  queue->tail = tmp;
+}
+
+int queue_remove (struct queue *queue)
+{
+  int retval = 0;
+  struct group *tmp;
+
+  if (!queue_isEmpty(queue))
+    {
+      tmp = queue->head;
+      retval = tmp->jackets; //change this
+      queue->head = tmp->next;
+      free(tmp);
+    }
+  return retval;
+}
+
+/*
+  threads:
+    Print out group #, craft requested, # jackets needed
+    Check to see if enough jackets available
+    If no jackets available:
+      wait or
+      if >5 groups waiting, exit
+    When jackets available report group # and left jackets
+    Call sleep with "use time"
+    Report return of jackets and available jackets
+    Unblock as many from queue as possible
+ */
+void * thread_body ( void *arg, int gnum,  int sleepv) {
+  /*
   long threadn = (long) arg;
   long local_data = random() % 100000;
   long ix;
@@ -42,21 +126,83 @@ void * thread_body ( void *arg ) {
   printf ("Starting thread %ld, local_data is %ld\n", threadn, local_data);
   for (ix = 0; ix < local_data; ix++) {
     if (pthread_mutex_lock(&mutex1)) { fatal(threadn); }
-    global_data ++;
+    // CRITICAL
+    
     if (pthread_mutex_unlock(&mutex1)) { fatal(threadn); }
   }
   pthread_exit((void *)local_data);
+  
+
+  printf("Group Number:%d, Craft:%s, Needed Jackets:%d\n", gnum, craft, jackets);
+  if ( line > 5 )
+    {
+      printf("Group %d has grown impatient!\n", gnum);
+      pthread_exit();
+    }
+  while ( line < 5 )
+    {
+      if ( freeJackets > jackets )
+	{
+	  
+	}
+      else if ( freeJackets < jackets )
+	{
+	  
+	}
+    }
+  */
+  if (pthread_mutex_lock(&mutex1)) { fatal(threadn); }
+  printf("Group Number:%d, Craft:%s, Needed Jackets:%d\n", gnum, craft, jackets);
+  sleep(sleepv);
+  printf("bye\n");
+  if (pthread_mutex_unlock(&mutex1)) { fatal(threadn); }
+  pthread_exit();
 }
 
-
-int main () {
-  pthread_t ids[N];
+/*
+  argv[1]: num groups to generate
+  argv[2]: (optional) rate for new groups to arrive
+           default=6, use rand number between 0 and
+	   value for sleep
+  argv[3]: (optional/requires argv[2]) Initialize rand
+           num with time(NULL), default = 0
+  loop that creates new threads should join finished threads
+  main should join all remaining threads after creation
+*/
+int main (int argc, int *argv) {
+  struct queue mq;
+  queue init(&myqueue);
+  
+  if (argv[1])
+    {
+      pthread_t ids[argv[1]];
+    }
   int err;
   long i;
 
-  long final_data = 0;
+  if (argc == 1)
+    {
+      
+      rate = 6;
+      sleepv = 0;
+      rnGen = 0;
+      srandom(0);
+    }
+  else if (argc == 2)
+    {
+      rate = argv[2];
+      sleepv = rand() % argv[2];
+      rnGen = 0;
+      srandom(sleepv);
+    }
+  else if (argc == 3)
+    {
+      rate = argv[2];
+      sleepv = rand() % argv[2];
+      rnGen = srandom(argv[3]);
+      srandom(sleepv);
+    }
 
-  srandom(0);
   pthread_mutex_init(&mutex1, NULL);
   
   for (i = 0; i < N; i++) {
@@ -66,7 +212,7 @@ int main () {
       exit (1);
     }
   }
-
+  /*
   printids("main");
 
   void *retval;
@@ -77,16 +223,12 @@ int main () {
   }
 
   printf ("global_data is %ld,  final_data is %ld\n", global_data, final_data);
-
+  */
   pthread_mutex_destroy(&mutex1);  // Not needed, but here for completeness
   return 0;
 }
 
 /*
-  kayak    : 1 lifejacket
-  canoe    : 2 lifejackets
-  sailboat : 4 lifejackets
-  capacity : 10 lifejackets
   globals:
     availableJackets
     activeKayak, activeCanoe, activeBoat
