@@ -241,4 +241,25 @@ int main (int argc, int *argv) {
       each thread represents a group of renters
       each thread randomly selects craft
       each thread selects between 0-7 time to use craft
- */
+  thread responsibility:
+    1.print group #, craft requested, and # of lifejackets needed
+    2.check lifejacket availablity
+    3.if no jackets are available, wait
+      if > 5 are waiting report exit and exit
+    4.when jackets are available
+      report group using them
+      report remaining jackets
+    5.call sleep with group's use time
+    6.report return of jackets and # available
+    7.unblock as many from queue without running out of jackets
+  main responsibility:
+    1.argv[1] = # of groups to generate
+    2.argv[2] (optional) = rate for new groups to arrive
+      default = 6, use rand number between 0 and sleep value
+    3.argv[3] (optional & requires argv[2]) = Initialize
+      the random number generator with "time(NULL)". default
+      value should be 0 (srandom(0); or srandom(time(NULL));)
+  loop that creates threads should join finished threads
+*/
+
+B
