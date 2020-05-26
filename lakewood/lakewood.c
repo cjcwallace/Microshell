@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdbool.h>
+#include <math.h>
 
 long global_data = 0;
 pthread_mutex_t mutex1;
@@ -22,11 +23,15 @@ int rate;
 int sleepv;
 int rnGen;
 
+int groups;
 int freeJackets = 10;
 char *crafts[] = {"kayak", "canoe", "boat"};
 int costs[] = {1, 2, 4};
 
+struct queue mq;
 int line = 0;
+
+//int gsize = (int) log10 (groups);
 
 /* Prototypes */
 void getJackets();
@@ -39,8 +44,6 @@ void fatal (long n) {
 
 struct group {
   long gnum;
-  char *craft;
-  long jackets;
   struct group *next;
 };
 
@@ -60,7 +63,7 @@ bool queue_isEmpty (struct queue *queue)
   return queue->head == NULL;
 }
 
-void queue_insert (struct queue* queue, int value)
+void queue_insert (struct queue* queue, long value)
 {
   struct group *tmp = malloc(sizeof(struct group));
   if (tmp == NULL)
@@ -69,7 +72,7 @@ void queue_insert (struct queue* queue, int value)
       exit(1);
     }
 
-  tmp->jackets = value;
+  tmp->gnum = value;
   tmp->next = NULL;
 
   if (queue->head == NULL)
@@ -91,12 +94,41 @@ int queue_remove (struct queue *queue)
   if (!queue_isEmpty(queue))
     {
       tmp = queue->head;
-      retval = tmp->jackets; //change this
+      retval = tmp->gnum; //change this
       queue->head = tmp->next;
       free(tmp);
     }
   line--;
   return retval;
+}
+
+int queue_head (struct queue *queue)
+{
+  if (line > 1)
+    {
+      return queue->head->gnum;
+    }
+  else
+    {
+      return -1;
+    }
+}
+
+void print_queue (struct queue *queue)
+{
+  struct group *tmp = malloc(sizeof(struct group));
+  tmp = queue->head;
+  printf("    Queue: [");
+  while (tmp->next != NULL)
+    {
+      printf("%ld, ",tmp->gnum);
+      tmp = tmp->next;
+    }
+  if (tmp->next == NULL)
+    {
+      printf("%ld", tmp->gnum);
+    }
+  printf("]\n");
 }
 
 /*
@@ -112,36 +144,43 @@ int queue_remove (struct queue *queue)
     Unblock as many from queue as possible
  */
 void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) {
-  long threadn = (long) arg;
-  struct group g;
+  long groupn = (long) arg;
+  struct group *g = malloc(sizeof(struct group));
+  g->gnum = groupn;
   long selection = random() % 3;
   char *craft = crafts[selection];
   long jackets = costs[selection];
-    
+  //int sleepv = random() % 8;
+  int inline = 0;
+
+  printf("Group Number:%*ld, Craft:%6s, Needed Jackets:%2ld\n", 3, groupn, craft, jackets);
   if ( line > 5 )
     {
-      printf("Group %ld has grown impatient!\n", threadn + 1);
+      printf("  Group %ld has grown impatient!\n", groupn);
       pthread_exit((void *)jackets);
     }
-  while ( line < 5 )
+  if ( line <= 5 || inline == 1)
     {
-      if ( freeJackets > jackets )
+      if ( freeJackets >= jackets ) /* good to go */
 	{
-	    if (pthread_mutex_lock(&mutex1)) { fatal(threadn); }
-	    printf("Group Number:%2ld, Craft:%6s, Needed Jackets:%2ld\n", threadn + 1, craft, jackets);
-	    sleep(1);
-	    printf("bye\n");
-	    if (pthread_mutex_unlock(&mutex1)) { fatal(threadn); }
-
+	  if (pthread_mutex_lock(&mutex1)) { fatal(groupn); }
+	  freeJackets -= jackets;
+	  if (pthread_mutex_unlock(&mutex1)) { fatal(groupn); }
 	}
-      else if ( freeJackets < jackets )
+      else if ( freeJackets < jackets ) /* wait */
 	{
-	  
+	  if (pthread_mutex_lock(&mutex1)) { fatal(groupn); }
+	  queue_insert(&mq, groupn);
+	  print_queue(&mq);
+	  inline = 1;
+	  if (pthread_mutex_unlock(&mutex1)) { fatal(groupn); }	  
+	  sleep(1);//sleepv;	  
 	}
     }
-  pthread_exit((void *)jackets);  
+  
+  
+   pthread_exit((void *)jackets);  
 }
-
 /*
   argv[1]: num groups to generate
   argv[2]: (optional) rate for new groups to arrive
@@ -153,15 +192,14 @@ void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) 
   main should join all remaining threads after creation
 */
 int main (int argc, char **argv) {
-  struct queue mq;
   queue_init(&mq);
  
   if (!argv[1])
     {
-      printf("usage: ./lakewood num opt opt\n");
+      printf("usage: ./lakewood num_customers [wait_time [r]]\n");
       exit(1);
     }
-  int groups = atoi(argv[1]);
+  groups = atoi(argv[1]);
   pthread_t ids[groups];
   int err;
   long i;
@@ -197,6 +235,7 @@ int main (int argc, char **argv) {
       fprintf (stderr, "Can't create thread %ld\n", i);
       exit (1);
     }
+    sleep(1);//sleepv
   }
   
   void *retval;
