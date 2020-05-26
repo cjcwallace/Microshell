@@ -104,14 +104,11 @@ int queue_remove (struct queue *queue)
 
 int queue_head (struct queue *queue)
 {
-  if (line > 1)
+  if (line >= 1)
     {
       return queue->head->gnum;
     }
-  else
-    {
-      return -1;
-    }
+  return -1;
 }
 
 void print_queue (struct queue *queue)
@@ -144,12 +141,12 @@ void print_queue (struct queue *queue)
     Unblock as many from queue as possible
  */
 void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) {
-  long groupn = (long) arg;
+  long groupn     = (long) arg;
   struct group *g = malloc(sizeof(struct group));
   g->gnum = groupn;
   long selection = random() % 3;
-  char *craft = crafts[selection];
-  long jackets = costs[selection];
+  char *craft    = crafts[selection];
+  long jackets   = costs[selection];
   //int sleepv = random() % 8;
   int waiting = 0;
 
@@ -170,11 +167,8 @@ void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) 
 	  print_queue(&mq);
 	  if (pthread_mutex_unlock(&mutex1)) { fatal(groupn); }
 	}
-      //while ((!queue_isEmpty(&mq) && g->gnum != queue_head(&mq)) || freeJackets < jackets)
-      while (g->gnum != queue_head(&mq) || freeJackets < jackets)
+      while ((!queue_isEmpty(&mq) && g->gnum != queue_head(&mq)) || freeJackets < jackets)
 	{
-	  //printf("%ld sleeping, fj: %d, j: %ld\n", groupn, freeJackets, jackets);
-	  //print_queue(&mq);
 	  sleep(1);//sleepv;	  
 	}
     }
