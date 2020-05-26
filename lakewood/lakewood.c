@@ -32,23 +32,15 @@ int line = 0;
 void getJackets();
 void returnJackets();
 
-void printids (char *name) {
-  pid_t      pid = getpid();
-  pthread_t  tid = pthread_self();
-
-  printf ("%s: pid %u tid %lu\n", name, (unsigned) pid, (unsigned long)tid);
-}
-
 void fatal (long n) {
   printf ("Fatal error, lock or unlock error, thread %ld.\n", n);
   exit(n);
 }
 
 struct group {
-  int gnum;
-  int selection = random() % 3;
-  char *craft = crafts[selection];
-  int jackets = costs[selection];
+  long gnum;
+  char *craft;
+  long jackets;
   struct group *next;
 };
 
@@ -73,11 +65,11 @@ void queue_insert (struct queue* queue, int value)
   struct group *tmp = malloc(sizeof(struct group));
   if (tmp == NULL)
     {
-      fputs ("malloc gailed\n", stderr);
+      fputs ("malloc failed\n", stderr);
       exit(1);
     }
 
-  tmp->data = value;
+  tmp->jackets = value;
   tmp->next = NULL;
 
   if (queue->head == NULL)
@@ -87,6 +79,7 @@ void queue_insert (struct queue* queue, int value)
     {
       queue->tail->next = tmp;
     }
+  line++;
   queue->tail = tmp;
 }
 
@@ -102,6 +95,7 @@ int queue_remove (struct queue *queue)
       queue->head = tmp->next;
       free(tmp);
     }
+  line--;
   return retval;
 }
 
@@ -117,46 +111,35 @@ int queue_remove (struct queue *queue)
     Report return of jackets and available jackets
     Unblock as many from queue as possible
  */
-void * thread_body ( void *arg, int gnum,  int sleepv) {
-  /*
+void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) {
   long threadn = (long) arg;
-  long local_data = random() % 100000;
-  long ix;
-  
-  printf ("Starting thread %ld, local_data is %ld\n", threadn, local_data);
-  for (ix = 0; ix < local_data; ix++) {
-    if (pthread_mutex_lock(&mutex1)) { fatal(threadn); }
-    // CRITICAL
+  struct group g;
+  long selection = random() % 3;
+  char *craft = crafts[selection];
+  long jackets = costs[selection];
     
-    if (pthread_mutex_unlock(&mutex1)) { fatal(threadn); }
-  }
-  pthread_exit((void *)local_data);
-  
-
-  printf("Group Number:%d, Craft:%s, Needed Jackets:%d\n", gnum, craft, jackets);
   if ( line > 5 )
     {
-      printf("Group %d has grown impatient!\n", gnum);
-      pthread_exit();
+      printf("Group %ld has grown impatient!\n", threadn + 1);
+      pthread_exit((void *)jackets);
     }
   while ( line < 5 )
     {
       if ( freeJackets > jackets )
 	{
-	  
+	    if (pthread_mutex_lock(&mutex1)) { fatal(threadn); }
+	    printf("Group Number:%2ld, Craft:%6s, Needed Jackets:%2ld\n", threadn + 1, craft, jackets);
+	    sleep(1);
+	    printf("bye\n");
+	    if (pthread_mutex_unlock(&mutex1)) { fatal(threadn); }
+
 	}
       else if ( freeJackets < jackets )
 	{
 	  
 	}
     }
-  */
-  if (pthread_mutex_lock(&mutex1)) { fatal(threadn); }
-  printf("Group Number:%d, Craft:%s, Needed Jackets:%d\n", gnum, craft, jackets);
-  sleep(sleepv);
-  printf("bye\n");
-  if (pthread_mutex_unlock(&mutex1)) { fatal(threadn); }
-  pthread_exit((*void);
+  pthread_exit((void *)jackets);  
 }
 
 /*
@@ -169,32 +152,35 @@ void * thread_body ( void *arg, int gnum,  int sleepv) {
   loop that creates new threads should join finished threads
   main should join all remaining threads after creation
 */
-int main (int argc, int *argv) {
+int main (int argc, char **argv) {
   struct queue mq;
-  queue init(&myqueue);
-  
-  if (argv[1])
+  queue_init(&mq);
+ 
+  if (!argv[1])
     {
-      pthread_t ids[argv[1]];
+      printf("usage: ./lakewood num opt opt\n");
+      exit(1);
     }
+  int groups = atoi(argv[1]);
+  pthread_t ids[groups];
   int err;
   long i;
 
-  if (argc == 1)
+  if (argc == 2)
     {
-      
       rate = 6;
       sleepv = 0;
       rnGen = 0;
       srandom(0);
     }
-  else if (argc == 2)
+  else if (argc == 3)
     {
-      rate = argv[2];
-      sleepv = rand() % argv[2];
+      rate = atoi(argv[2]);
+      sleepv = rand() % atoi(argv[2]);
       rnGen = 0;
       srandom(sleepv);
     }
+  /*
   else if (argc == 3)
     {
       rate = argv[2];
@@ -202,28 +188,23 @@ int main (int argc, int *argv) {
       rnGen = srandom(argv[3]);
       srandom(sleepv);
     }
-
+  */
   pthread_mutex_init(&mutex1, NULL);
   
-  for (i = 0; i < N; i++) {
+  for (i = 0; i < groups; i++) {
     err = pthread_create (&ids[i], NULL, thread_body, (void *)i);
     if (err) {
       fprintf (stderr, "Can't create thread %ld\n", i);
       exit (1);
     }
   }
-  /*
-  printids("main");
-
+  
   void *retval;
 
-  for (i=0; i < N; i++) {
+  for (i = 0; i < groups; i++) {
     pthread_join(ids[i], &retval);
-    final_data += (long)retval;
   }
-
-  printf ("global_data is %ld,  final_data is %ld\n", global_data, final_data);
-  */
+ 
   pthread_mutex_destroy(&mutex1);  // Not needed, but here for completeness
   return 0;
 }
