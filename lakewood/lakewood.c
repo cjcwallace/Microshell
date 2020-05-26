@@ -218,36 +218,32 @@ int main (int argc, char **argv) {
 
   if (argc == 2)
     {
-      rate = 6;
+      rate = 7;
       sleepv = 0;
       rnGen = 0;
-      srandom(0);
+    }
+  else if (argc == 3)
+    {
+      rate = atoi(argv[2]) + 1;
+      sleepv = rand() % atoi(argv[2]);
+      rnGen = 0;
     }
   else if (argc == 3)
     {
       rate = atoi(argv[2]);
       sleepv = rand() % atoi(argv[2]);
-      rnGen = 0;
-      srandom(sleepv);
+      //rnGen = srandom(atoi(argv[3]));
     }
-  /*
-  else if (argc == 3)
-    {
-      rate = argv[2];
-      sleepv = rand() % argv[2];
-      rnGen = srandom(argv[3]);
-      srandom(sleepv);
-    }
-  */
+
   pthread_mutex_init(&mutex1, NULL);
   
   for (i = 0; i < groups; i++) {
     err = pthread_create (&ids[i], NULL, thread_body, (void *)i);
     if (err) {
       fprintf (stderr, "Can't create thread %ld\n", i);
-      exit (1);
+      exit(1);
     }
-    sleep(1);//sleepv
+    sleep(rand() % rate);
   }
   
   void *retval;
