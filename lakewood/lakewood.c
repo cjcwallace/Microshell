@@ -31,11 +31,9 @@ int costs[] = {1, 2, 4};
 struct queue mq;
 int line = 0;
 
-//int gsize = (int) log10 (groups);
-
 /* Prototypes */
-void getJackets();
-void returnJackets();
+int getJackets(int j);
+void putJackets(int j);
 
 void fatal (long n) {
   printf ("Fatal error, lock or unlock error, thread %ld.\n", n);
@@ -44,6 +42,7 @@ void fatal (long n) {
 
 struct group {
   long gnum;
+  pthread_cond_t done;
   struct group *next;
 };
 
@@ -151,14 +150,21 @@ void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) 
   int waiting = 0;
 
   printf("Group %ld requesting a %s with %ld lifevests\n", groupn, craft, jackets);
+
+}
+
+/* 
+ * return: 0 did not get, 1 got */
+int getJackets(int jackets)
+{
   if ( line > 5 ) /* ignore all other processes if line is too long */
     {
       printf("   Group %ld has grown impatient!\n", groupn);
-      pthread_exit((void *)jackets);
+      return 0;
     }
   if ( line <= 5 || waiting == 1 )
     {
-      if ( freeJackets < jackets || (!queue_isEmpty(&mq) && g->gnum != queue_head(&mq))) /* wait */
+      if ( freeJackets < jackets || (!queue_isEmpty(&mq) && g->gnum != queue_head(&mq)))
 	{
 	  if (pthread_mutex_lock(&mutex1)) { fatal(groupn); }
 	  queue_insert(&mq, groupn);
@@ -179,13 +185,17 @@ void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) 
       printf("   Waiting group %ld may now proceed.\n", groupn);
       if (pthread_mutex_unlock(&mutex1)) { fatal(groupn); }
     }
+  return 1;
+}
 
-  /* Use the craft */
+/* Use the craft and return jackets to available pool */
+void putJackets(int jackets)
+{
   if (pthread_mutex_lock(&mutex1)) { fatal(groupn); }
   freeJackets -= jackets;
   printf("Group %ld issued %ld lifevests, %d remaining\n", groupn, jackets, freeJackets);
   if (pthread_mutex_unlock(&mutex1)) { fatal(groupn); }
-  sleep(rand() % 8);//8
+  sleep(rand() % 8);
   /* Finish using craft, release jackets back to natural habitat */
   if (pthread_mutex_lock(&mutex1)) { fatal(groupn); }
   freeJackets += jackets;
@@ -193,6 +203,8 @@ void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) 
   if (pthread_mutex_unlock(&mutex1)) { fatal(groupn); }
   pthread_exit((void *)jackets);
 }
+
+
 /*
   argv[1]: num groups to generate
   argv[2]: (optional) rate for new groups to arrive
