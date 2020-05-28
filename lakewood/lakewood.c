@@ -140,8 +140,8 @@ void print_queue (struct queue *queue)
     Unblock as many from queue as possible
  */
 void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) {
-  long groupn     = (long) arg;
-  struct group *g = malloc(sizeof(struct group));
+  struct group *g = (struct group*)arg;
+  long groupn     = (long) g->gnum;
   long selection = rand() % 3;
   char *craft    = crafts[selection];
   long jackets   = costs[selection];
@@ -153,7 +153,7 @@ void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) 
   if (!success) {
     pthread_exit(NULL);
   }
-  //sleep(rand() % 8);
+  sleep(rand() % 8);
   putJackets(g);
   g->done = 1;
   pthread_exit((void *)jackets);
@@ -162,49 +162,48 @@ void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) 
 /* return: 0 did not get, 1 got */
 int getJackets(struct group *g)
 {
-   if ( line > 5 ) /* ignore all other processes if line is too long */
+  if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); } /* lock */
+  if ( line >= 5 ) /* ignore all other processes if line is too long */
     {
       printf("   Group %ld has grown impatient!\n", g->gnum);
+      
       return 0;
     }
-   if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); }
-   if ( freeJackets < g->jackets || !queue_isEmpty(&mq) )
+  if ( freeJackets < g->jackets || !queue_isEmpty(&mq) )
     {
       queue_insert(&mq, g->gnum);
       line++;
       printf("   Group %ld waiting in line for %d vests.\n", g->gnum, g->jackets);
       print_queue(&mq);
-      if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); }
+      while (1)
+	{
+	  if (pthread_cond_wait(&cond, &mutex1)) { perror("wait"); exit(g->gnum); }
+	  if (g->jackets <= freeJackets && g->gnum == queue_head(&mq))
+	    {
+	      queue_remove(&mq);
+	      line--;
+	      printf("   Waiting group %ld may now proceed.\n", g->gnum);
+	      pthread_cond_broadcast(&cond);
+	      break;
+	    }
+	}
     }
-  while ((!queue_isEmpty(&mq) && g->gnum != queue_head(&mq)) || freeJackets < g->jackets)
-    {
-      if (pthread_cond_wait(&cond, &mutex1)) { perror("wait"); exit(g->gnum); }
-    }
-  if (!queue_isEmpty(&mq)) { print_queue(&mq); }
-  if (g->gnum == queue_head(&mq))
-    {
-      if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); }
-      queue_remove(&mq);
-      line--;
-      printf("   Waiting group %ld may now proceed.\n", g->gnum);
-      if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); }
-    }
+  freeJackets -= g->jackets;
+  printf("Group %ld issued %d lifevests, %d remaining\n", g->gnum, g->jackets, freeJackets);
+  if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); } /* unlock */
   return 1;
 }
 
 /* Use the craft and return jackets to available pool */
 void putJackets(struct group *g)
 {
-  if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); }
-  freeJackets -= g->jackets;
-  printf("Group %ld issued %d lifevests, %d remaining\n", g->gnum, g->jackets, freeJackets);
-  sleep(rand() % 8);
+  if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); } /* lock */
   /* Finish using craft, release jackets back to natural habitat */
   freeJackets += g->jackets;
   pthread_cond_broadcast(&cond);
   printf("Group %ld returning %d lifevests, now we have %d\n", g->gnum, g->jackets, freeJackets);
   queue_insert(&cq, g->gnum);
-  if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); }
+  if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); } /* unlock */
  }
 
 
@@ -235,7 +234,7 @@ int main (int argc, char **argv) {
   else if (argc == 3)
     {
       srandom(0);
-      rate = atoi(argv[2]) + 1;
+      rate = atoi(argv[2]);
       sleepv = rand() % rate;
     }
   else if (argc == 4)
@@ -247,20 +246,26 @@ int main (int argc, char **argv) {
 
   pthread_mutex_init(&mutex1, NULL);
   pthread_cond_init(&cond, NULL);
-  
-  for (i = 0; i < groups; i++) {
-    err = pthread_create (&ids[i], NULL, thread_body, (void *)i);
-    if (err) {
-      fprintf (stderr, "Can't create thread %ld\n", i);
-      exit(1);
-    }
-    sleep(rand() % rate);
-  }
-  
   void *retval;
-
-  for (i = 0; i < groups; i++) {
-    pthread_join(ids[i], &retval);
+  int destroyed = 0;
+  
+  for (i = 0; groups != destroyed; i++) {
+    if (i < groups) {
+      struct group *g = malloc(sizeof(struct group));
+      g->gnum = i;
+      err = pthread_create (&ids[i], NULL, thread_body, (void *) g);
+      if (err) {
+	fprintf (stderr, "Can't create thread %ld\n", i);
+	exit(1);
+      }
+      sleep(rand() % rate);
+    }
+    while (!queue_isEmpty(&cq))
+      {
+	pthread_join(ids[queue_head(&cq)], &retval);
+	queue_remove(&cq);
+	destroyed++;
+      }
   }
  
   pthread_mutex_destroy(&mutex1);  // Not needed, but here for completeness
