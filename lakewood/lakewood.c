@@ -105,7 +105,7 @@ int queue_remove (struct queue *queue)
 
 int queue_head (struct queue *queue)
 {
-  if (line >= 1)
+  if (!queue_isEmpty(queue))
     {
       return queue->head->gnum;
     }
@@ -185,6 +185,8 @@ int getJackets(struct group *g)
 	  if (pthread_cond_wait(&done, &mutex1)) { perror("wait"); exit(g->gnum); }
 	}
     }
+  printf("leftwait\n");
+  if (!queue_isEmpty(&mq)) { print_queue(&mq); }
   if (g->gnum == queue_head(&mq))
     {
       if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); }
@@ -202,15 +204,15 @@ void putJackets(struct group *g)
   freeJackets -= g->jackets;
   printf("Group %ld issued %d lifevests, %d remaining\n", g->gnum, g->jackets, freeJackets);
   if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); }
-  sleep(rand() % 8);
+  sleep(rand() % 2);//8
   /* Finish using craft, release jackets back to natural habitat */
   if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); }
   freeJackets += g->jackets;
   pthread_cond_signal(&done);
   printf("Group %ld returning %d lifevests, now we have %d\n", g->gnum, g->jackets, freeJackets);
+  queue_insert(&cq, g->gnum);
   if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); }
-  //pthread_exit((void *)jackets);
-}
+ }
 
 
 /*
@@ -251,6 +253,7 @@ int main (int argc, char **argv) {
     }
 
   pthread_mutex_init(&mutex1, NULL);
+  pthread_cond_init(&done, NULL);
   
   for (i = 0; i < groups; i++) {
     err = pthread_create (&ids[i], NULL, thread_body, (void *)i);
@@ -270,18 +273,3 @@ int main (int argc, char **argv) {
   pthread_mutex_destroy(&mutex1);  // Not needed, but here for completeness
   return 0;
 }
-
-/*
-  globals:
-    availableJackets
-    activeKayak, activeCanoe, activeBoat
-    waitList
-  ideas:
-    first come first serve: a kayak will not be served before
-    a canoe/boat even if there are available lifejackets
-    maximum of 5 waiter
-    main spawns a thread for each renter
-      each thread represents a group of renters
-      each thread randomly selects craft
-      each thread selects between 0-7 time to use craft
- */
