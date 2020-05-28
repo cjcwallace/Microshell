@@ -20,7 +20,6 @@ pthread_mutex_t mutex1;
 
 int rate;
 int sleepv;
-int rnGen;
 
 int groups;
 int freeJackets = 10;
@@ -31,7 +30,7 @@ struct queue mq;
 struct queue cq;
 int line = 0;
 
-pthread_cond_t done;
+pthread_cond_t cond;
 
 void fatal (long n) {
   printf ("Fatal error, lock or unlock error, thread %ld.\n", n);
@@ -41,6 +40,7 @@ void fatal (long n) {
 struct group {
   long gnum;
   int jackets;
+  bool done;
   struct group *next;
 };
 
@@ -83,7 +83,6 @@ void queue_insert (struct queue* queue, long value)
     {
       queue->tail->next = tmp;
     }
-  line++;
   queue->tail = tmp;
 }
 
@@ -99,7 +98,6 @@ int queue_remove (struct queue *queue)
       queue->head = tmp->next;
       free(tmp);
     }
-  line--;
   return retval;
 }
 
@@ -144,7 +142,7 @@ void print_queue (struct queue *queue)
 void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) {
   long groupn     = (long) arg;
   struct group *g = malloc(sizeof(struct group));
-  long selection = random() % 3;
+  long selection = rand() % 3;
   char *craft    = crafts[selection];
   long jackets   = costs[selection];
   g->gnum = groupn;
@@ -155,42 +153,39 @@ void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) 
   if (!success) {
     pthread_exit(NULL);
   }
-  sleep(rand() % 8);
+  //sleep(rand() % 8);
   putJackets(g);
+  g->done = 1;
   pthread_exit((void *)jackets);
 }
 
 /* return: 0 did not get, 1 got */
 int getJackets(struct group *g)
 {
-  int waiting = 0;
-  if ( line > 5 ) /* ignore all other processes if line is too long */
+   if ( line > 5 ) /* ignore all other processes if line is too long */
     {
       printf("   Group %ld has grown impatient!\n", g->gnum);
       return 0;
     }
-  if ( line <= 5 || waiting == 1 )
+   if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); }
+   if ( freeJackets < g->jackets || !queue_isEmpty(&mq) )
     {
-      if ( freeJackets < g->jackets || (!queue_isEmpty(&mq) && g->gnum != queue_head(&mq)))
-	{
-	  if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); }
-	  queue_insert(&mq, g->gnum);
-	  printf("   Group %ld waiting in line for %d vests.\n", g->gnum, g->jackets);
-	  waiting = 1;
-	  print_queue(&mq);
-	  if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); }
-	}
-      while ((!queue_isEmpty(&mq) && g->gnum != queue_head(&mq)) || freeJackets < g->jackets)
-	{
-	  if (pthread_cond_wait(&done, &mutex1)) { perror("wait"); exit(g->gnum); }
-	}
+      queue_insert(&mq, g->gnum);
+      line++;
+      printf("   Group %ld waiting in line for %d vests.\n", g->gnum, g->jackets);
+      print_queue(&mq);
+      if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); }
     }
-  printf("leftwait\n");
+  while ((!queue_isEmpty(&mq) && g->gnum != queue_head(&mq)) || freeJackets < g->jackets)
+    {
+      if (pthread_cond_wait(&cond, &mutex1)) { perror("wait"); exit(g->gnum); }
+    }
   if (!queue_isEmpty(&mq)) { print_queue(&mq); }
   if (g->gnum == queue_head(&mq))
     {
       if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); }
       queue_remove(&mq);
+      line--;
       printf("   Waiting group %ld may now proceed.\n", g->gnum);
       if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); }
     }
@@ -203,12 +198,10 @@ void putJackets(struct group *g)
   if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); }
   freeJackets -= g->jackets;
   printf("Group %ld issued %d lifevests, %d remaining\n", g->gnum, g->jackets, freeJackets);
-  if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); }
-  sleep(rand() % 2);//8
+  sleep(rand() % 8);
   /* Finish using craft, release jackets back to natural habitat */
-  if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); }
   freeJackets += g->jackets;
-  pthread_cond_signal(&done);
+  pthread_cond_broadcast(&cond);
   printf("Group %ld returning %d lifevests, now we have %d\n", g->gnum, g->jackets, freeJackets);
   queue_insert(&cq, g->gnum);
   if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); }
@@ -235,25 +228,25 @@ int main (int argc, char **argv) {
   
   if (argc == 2)
     {
+      srandom(0);
       rate = 7;
       sleepv = 0;
-      srandom(0);
     }
   else if (argc == 3)
     {
+      srandom(0);
       rate = atoi(argv[2]) + 1;
-      sleepv = rand() % atoi(argv[2]);
-      srandom(0);
+      sleepv = rand() % rate;
     }
-  else if (argc == 3)
+  else if (argc == 4)
     {
+      srandom(atoi(argv[3]));
       rate = atoi(argv[2]);
       sleepv = rand() % atoi(argv[2]);
-      srandom(atoi(argv[3]));
     }
 
   pthread_mutex_init(&mutex1, NULL);
-  pthread_cond_init(&done, NULL);
+  pthread_cond_init(&cond, NULL);
   
   for (i = 0; i < groups; i++) {
     err = pthread_create (&ids[i], NULL, thread_body, (void *)i);
