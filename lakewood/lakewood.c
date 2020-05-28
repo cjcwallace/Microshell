@@ -14,10 +14,9 @@
 #include <stdbool.h>
 #include <math.h>
 
-long global_data = 0;
-pthread_mutex_t mutex1;
-
 /* Globals */
+
+pthread_mutex_t mutex1;
 
 int rate;
 int sleepv;
@@ -29,11 +28,10 @@ char *crafts[] = {"kayak", "canoe", "boat"};
 int costs[] = {1, 2, 4};
 
 struct queue mq;
+struct queue cq;
 int line = 0;
 
-/* Prototypes */
-int getJackets(int j);
-void putJackets(int j);
+pthread_cond_t done;
 
 void fatal (long n) {
   printf ("Fatal error, lock or unlock error, thread %ld.\n", n);
@@ -42,9 +40,13 @@ void fatal (long n) {
 
 struct group {
   long gnum;
-  pthread_cond_t done;
+  int jackets;
   struct group *next;
 };
+
+/* Prototypes */
+int getJackets(struct group *g);
+void putJackets(struct group *g);
 
 struct queue {
   struct group *head;
@@ -142,82 +144,83 @@ void print_queue (struct queue *queue)
 void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) {
   long groupn     = (long) arg;
   struct group *g = malloc(sizeof(struct group));
-  g->gnum = groupn;
   long selection = random() % 3;
   char *craft    = crafts[selection];
   long jackets   = costs[selection];
-  //int sleepv = random() % 8;
-  int waiting = 0;
+  g->gnum = groupn;
+  g->jackets = jackets;
 
   printf("Group %ld requesting a %s with %ld lifevests\n", groupn, craft, jackets);
-
+  int success = getJackets(g);
+  if (!success) {
+    pthread_exit(NULL);
+  }
+  sleep(rand() % 8);
+  putJackets(g);
+  pthread_exit((void *)jackets);
 }
 
-/* 
- * return: 0 did not get, 1 got */
-int getJackets(int jackets)
+/* return: 0 did not get, 1 got */
+int getJackets(struct group *g)
 {
+  int waiting = 0;
   if ( line > 5 ) /* ignore all other processes if line is too long */
     {
-      printf("   Group %ld has grown impatient!\n", groupn);
+      printf("   Group %ld has grown impatient!\n", g->gnum);
       return 0;
     }
   if ( line <= 5 || waiting == 1 )
     {
-      if ( freeJackets < jackets || (!queue_isEmpty(&mq) && g->gnum != queue_head(&mq)))
+      if ( freeJackets < g->jackets || (!queue_isEmpty(&mq) && g->gnum != queue_head(&mq)))
 	{
-	  if (pthread_mutex_lock(&mutex1)) { fatal(groupn); }
-	  queue_insert(&mq, groupn);
-	  printf("   Group %ld waiting in line for %ld vests.\n", groupn, jackets);
+	  if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); }
+	  queue_insert(&mq, g->gnum);
+	  printf("   Group %ld waiting in line for %d vests.\n", g->gnum, g->jackets);
 	  waiting = 1;
 	  print_queue(&mq);
-	  if (pthread_mutex_unlock(&mutex1)) { fatal(groupn); }
+	  if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); }
 	}
-      while ((!queue_isEmpty(&mq) && g->gnum != queue_head(&mq)) || freeJackets < jackets)
+      while ((!queue_isEmpty(&mq) && g->gnum != queue_head(&mq)) || freeJackets < g->jackets)
 	{
-	  sleep(1);//sleepv;	  
+	  if (pthread_cond_wait(&done, &mutex1)) { perror("wait"); exit(g->gnum); }
 	}
     }
   if (g->gnum == queue_head(&mq))
     {
-      if (pthread_mutex_lock(&mutex1)) { fatal(groupn); }
+      if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); }
       queue_remove(&mq);
-      printf("   Waiting group %ld may now proceed.\n", groupn);
-      if (pthread_mutex_unlock(&mutex1)) { fatal(groupn); }
+      printf("   Waiting group %ld may now proceed.\n", g->gnum);
+      if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); }
     }
   return 1;
 }
 
 /* Use the craft and return jackets to available pool */
-void putJackets(int jackets)
+void putJackets(struct group *g)
 {
-  if (pthread_mutex_lock(&mutex1)) { fatal(groupn); }
-  freeJackets -= jackets;
-  printf("Group %ld issued %ld lifevests, %d remaining\n", groupn, jackets, freeJackets);
-  if (pthread_mutex_unlock(&mutex1)) { fatal(groupn); }
+  if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); }
+  freeJackets -= g->jackets;
+  printf("Group %ld issued %d lifevests, %d remaining\n", g->gnum, g->jackets, freeJackets);
+  if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); }
   sleep(rand() % 8);
   /* Finish using craft, release jackets back to natural habitat */
-  if (pthread_mutex_lock(&mutex1)) { fatal(groupn); }
-  freeJackets += jackets;
-  printf("Group %ld returning %ld lifevests, now we have %d\n", groupn, jackets, freeJackets);
-  if (pthread_mutex_unlock(&mutex1)) { fatal(groupn); }
-  pthread_exit((void *)jackets);
+  if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); }
+  freeJackets += g->jackets;
+  pthread_cond_signal(&done);
+  printf("Group %ld returning %d lifevests, now we have %d\n", g->gnum, g->jackets, freeJackets);
+  if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); }
+  //pthread_exit((void *)jackets);
 }
 
 
 /*
-  argv[1]: num groups to generate
-  argv[2]: (optional) rate for new groups to arrive
-           default=6, use rand number between 0 and
-	   value for sleep
-  argv[3]: (optional/requires argv[2]) Initialize rand
-           num with time(NULL), default = 0
   loop that creates new threads should join finished threads
   main should join all remaining threads after creation
 */
 int main (int argc, char **argv) {
-  queue_init(&mq);
- 
+  queue_init(&mq); /* queue used to wait */
+  queue_init(&cq); /* completed queue */
+  
   if (!argv[1])
     {
       printf("usage: ./lakewood num_customers [wait_time [r]]\n");
@@ -227,24 +230,24 @@ int main (int argc, char **argv) {
   pthread_t ids[groups];
   int err;
   long i;
-
+  
   if (argc == 2)
     {
       rate = 7;
       sleepv = 0;
-      rnGen = 0;
+      srandom(0);
     }
   else if (argc == 3)
     {
       rate = atoi(argv[2]) + 1;
       sleepv = rand() % atoi(argv[2]);
-      rnGen = 0;
+      srandom(0);
     }
   else if (argc == 3)
     {
       rate = atoi(argv[2]);
       sleepv = rand() % atoi(argv[2]);
-      //rnGen = srandom(atoi(argv[3]));
+      srandom(atoi(argv[3]));
     }
 
   pthread_mutex_init(&mutex1, NULL);
