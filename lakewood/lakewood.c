@@ -4,6 +4,9 @@
  * Assignment 5
  *
  * Base code provided by Phil Nelson
+ * Files Referenced:
+ * -- queue.c, author Phil Nelson
+ * -- pth-mutex.c, author Phil Nelson
  */
 
 #include <stdio.h>
@@ -16,21 +19,19 @@
 
 /* Globals */
 
+pthread_cond_t cond;
 pthread_mutex_t mutex1;
 
 int rate;
 int sleepv;
 
 int groups;
-int freeJackets = 10;
 char *crafts[] = {"kayak", "canoe", "boat"};
 int costs[] = {1, 2, 4};
 
 struct queue mq;
 struct queue cq;
 int line = 0;
-
-pthread_cond_t cond;
 
 void fatal (long n) {
   printf ("Fatal error, lock or unlock error, thread %ld.\n", n);
@@ -69,20 +70,15 @@ void queue_insert (struct queue* queue, long value)
   struct group *tmp = malloc(sizeof(struct group));
   if (tmp == NULL)
     {
-      fputs ("malloc failed\n", stderr);
+      fprintf(stderr, "malloc failed\n");
       exit(1);
     }
 
   tmp->gnum = value;
   tmp->next = NULL;
 
-  if (queue->head == NULL)
-    {
-      queue->head = tmp;
-    } else
-    {
-      queue->tail->next = tmp;
-    }
+  if (queue->head == NULL) queue->head = tmp;
+  else queue->tail->next = tmp;
   queue->tail = tmp;
 }
 
@@ -94,13 +90,14 @@ int queue_remove (struct queue *queue)
   if (!queue_isEmpty(queue))
     {
       tmp = queue->head;
-      retval = tmp->gnum; //change this
+      retval = tmp->gnum;
       queue->head = tmp->next;
       free(tmp);
     }
   return retval;
 }
 
+/* Return the group in the first position of the queue */
 int queue_head (struct queue *queue)
 {
   if (!queue_isEmpty(queue))
@@ -110,6 +107,7 @@ int queue_head (struct queue *queue)
   return -1;
 }
 
+/* Print all elements in queue, even if empty */
 void print_queue (struct queue *queue)
 {
   struct group *tmp = malloc(sizeof(struct group));
@@ -139,7 +137,7 @@ void print_queue (struct queue *queue)
     Report return of jackets and available jackets
     Unblock as many from queue as possible
  */
-void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) {
+void * thread_body ( void *arg ) {
   struct group *g = (struct group*)arg;
   long groupn     = (long) g->gnum;
   long selection = rand() % 3;
@@ -158,6 +156,76 @@ void * thread_body ( void *arg ) {//, int gnum, int sleepv, struct group group) 
   g->done = 1;
   pthread_exit((void *)jackets);
 }
+
+/*
+  loop that creates new threads should join finished threads
+  main should join all remaining threads after creation
+*/
+int main (int argc, char **argv) {
+  queue_init(&mq); /* queue used to wait */
+  queue_init(&cq); /* completed queue */
+  
+  if (!argv[1] || argc > 4)
+    {
+      printf("usage: ./lakewood num_customers [wait_time [r]]\n");
+      exit(1);
+    }
+  
+  groups = atoi(argv[1]);
+  pthread_t ids[groups];
+  int err;
+  long i;
+  
+  if (argc == 2)
+    {
+      srandom(0);
+      rate = 7;
+      sleepv = 0;
+    }
+  else if (argc == 3)
+    {
+      srandom(0);
+      rate = atoi(argv[2]);
+      sleepv = rand() % rate;
+    }
+  else if (argc == 4)
+    {
+      srandom(time(NULL));
+      rate = atoi(argv[2]);
+      sleepv = rand() % rate;
+    }
+
+  pthread_mutex_init(&mutex1, NULL);
+  pthread_cond_init(&cond, NULL);
+  void *retval;
+  int destroyed = 0;
+  
+  for (i = 0; groups != destroyed; i++) {
+    if (i < groups) {
+      struct group *g = malloc(sizeof(struct group));
+      g->gnum = i;
+      err = pthread_create (&ids[i], NULL, thread_body, (void *) g);
+      if (err) {
+	fprintf (stderr, "Can't create thread %ld\n", i);
+	exit(1);
+      }
+      sleep(rand() % rate);
+    }
+    while (!queue_isEmpty(&cq))
+      {
+	pthread_join(ids[queue_head(&cq)], &retval);
+	queue_remove(&cq);
+	destroyed++;
+      }
+  }
+ 
+  pthread_mutex_destroy(&mutex1);  // Not needed, but here for completeness
+  return 0;
+}
+
+/* Monitor */
+
+int freeJackets = 10;
 
 /* return: 0 did not get, 1 got */
 int getJackets(struct group *g)
@@ -205,69 +273,3 @@ void putJackets(struct group *g)
   queue_insert(&cq, g->gnum);
   if (pthread_mutex_unlock(&mutex1)) { fatal(g->gnum); } /* unlock */
  }
-
-
-/*
-  loop that creates new threads should join finished threads
-  main should join all remaining threads after creation
-*/
-int main (int argc, char **argv) {
-  queue_init(&mq); /* queue used to wait */
-  queue_init(&cq); /* completed queue */
-  
-  if (!argv[1] || argc > 4)
-    {
-      printf("usage: ./lakewood num_customers [wait_time [r]]\n");
-      exit(1);
-    }
-  groups = atoi(argv[1]);
-  pthread_t ids[groups];
-  int err;
-  long i;
-  
-  if (argc == 2)
-    {
-      srandom(0);
-      rate = 7;
-      sleepv = 0;
-    }
-  else if (argc == 3)
-    {
-      srandom(0);
-      rate = atoi(argv[2]);
-      sleepv = rand() % rate;
-    }
-  else if (argc == 4)
-    {
-      srandom(time(NULL));
-      rate = atoi(argv[2]);
-      sleepv = rand() % atoi(argv[2]);
-    }
-
-  pthread_mutex_init(&mutex1, NULL);
-  pthread_cond_init(&cond, NULL);
-  void *retval;
-  int destroyed = 0;
-  
-  for (i = 0; groups != destroyed; i++) {
-    if (i < groups) {
-      struct group *g = malloc(sizeof(struct group));
-      g->gnum = i;
-      err = pthread_create (&ids[i], NULL, thread_body, (void *) g);
-      if (err) {
-	fprintf (stderr, "Can't create thread %ld\n", i);
-	exit(1);
-      }
-      sleep(rand() % rate);
-    }
-    while (!queue_isEmpty(&cq))
-      {
-	pthread_join(ids[queue_head(&cq)], &retval);
-	queue_remove(&cq);
-	destroyed++;
-      }
-  }
- 
-  pthread_mutex_destroy(&mutex1);  // Not needed, but here for completeness
-  return 0;
-}
