@@ -215,7 +215,7 @@ int main (int argc, char **argv) {
   queue_init(&mq); /* queue used to wait */
   queue_init(&cq); /* completed queue */
   
-  if (!argv[1])
+  if (!argv[1] || argc > 4)
     {
       printf("usage: ./lakewood num_customers [wait_time [r]]\n");
       exit(1);
@@ -239,7 +239,7 @@ int main (int argc, char **argv) {
     }
   else if (argc == 4)
     {
-      srandom(atoi(argv[3]));
+      srandom(time(NULL));
       rate = atoi(argv[2]);
       sleepv = rand() % atoi(argv[2]);
     }
