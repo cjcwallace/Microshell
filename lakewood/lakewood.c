@@ -233,8 +233,7 @@ int getJackets(struct group *g)
   if (pthread_mutex_lock(&mutex1)) { fatal(g->gnum); } /* lock */
   if ( line >= 5 ) /* ignore all other processes if line is too long */
     {
-      printf("   Group %ld has grown impatient!\n", g->gnum);
-      
+      printf("   Group %ld has grown impatient!\n", g->gnum);      
       return 0;
     }
   if ( freeJackets < g->jackets || !queue_isEmpty(&mq) )
