@@ -28,11 +28,12 @@ struct group {
   int y;
   int z;
   int n; /* number of comps */
+  int start;
   int threadn;
 };
 
 /* Returns list containing number of computations each thread computes
- * x <- (x * y), tcount <- number of threads used */
+ * x <- (x * z), tcount <- number of threads used */
 int getSplit(int x, int tcount, int *tsplit)
 {
   int v = x / tcount;
@@ -48,6 +49,10 @@ int getSplit(int x, int tcount, int *tsplit)
 	  tsplit[i] += 1;
 	} 
     }
+  for (int i = 1; i < tcount; i++ )
+    {
+      tsplit[i] += tsplit[i-1];
+    }
   return 0;
 }
 
@@ -61,8 +66,17 @@ void * mul_thread (void *arg)
   int x = g->x;
   int y = g->y;
   int z = g->z;
-  int start = g->threadn * g->n;
-  int end = (g->threadn * g->n) + g->n;
+  /* start and end indices of completed matrix */
+  int start = g->start;
+  int end = start + g->n;
+  printf("~~~~~~~~~~~~~~~~~\nthreadn:%d, n:%d \nstart: %d, end:%d\n",g->threadn, g->n, start, end);
+  printf("A of start:%f\n", A[start]);
+  
+  /*  ix: x of matrix 1
+   *  jx: y of matrix 2
+   *  kx: shared dimension 
+   *      x of matrix 2, y of matrix 1
+   */
   int ix, jx, kx;
   
   for (ix = 0; ix < x; ix++) {
@@ -70,13 +84,15 @@ void * mul_thread (void *arg)
     for (jx = 0; jx < z; jx++) {
       // Columns of solution
       float tval = 0;
-      for (kx = 0; kx < y; kx++) {
+      // 0 and y
+      for (kx = start; kx < end; kx++) {
 	// Sum the A row time B column
 	tval += A[idx(ix,kx,y)] * B[idx(kx,jx,z)];
       }
       C[idx(ix,jx,z)] = tval;
     }
   }
+  pthread_exit(NULL);
 }
 
 /* Matrix Multiply:
@@ -98,7 +114,9 @@ void MatMul (double *A, double *B, double *C, int x, int y, int z, int tcount)
     g->x = x;
     g->y = y;
     g->z = z;
-    g->n = tsplit[i];
+    if ( i == 0 ) g->n = tsplit[i];
+    else g->n = tsplit[i] - tsplit[i - 1];
+    g->start = tsplit[i] - g->n;
     int err = pthread_create (&ids[i], NULL, mul_thread, (void *) g);
     if (err) {
       fprintf(stderr, "Can't create thread %d\n", i);
@@ -262,6 +280,7 @@ int main (int argc, char ** argv)
     MatGen(A,x,y,useRand);
     MatGen(B,y,z,useRand);
     MatMul(A, B, C, x, y, z, tcount);
+    sleep(1);
     if (debug) {
       printf ("-------------- orignal A matrix ------------------\n");
       MatPrint(A,x,y);
