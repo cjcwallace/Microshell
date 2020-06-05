@@ -1,5 +1,9 @@
-/* Simple matrix multiply program
+/* Cameron Wallace 
+ * June 1, 2020 
+ * CSCI 347 Spring 2020
+ * Assignment 6
  *
+ * Simple matrix multiply program provided by
  * Phil Nelson, March 5, 2019
  *
  */
@@ -76,12 +80,11 @@ void * mul_thread (void *arg)
       /* row of matA and col of matB */
       int row = i/x;
       int col = (i % z);
-      // multiply row A by col B
+      /* multiply row A by col B */
       float tval = 0;
       for (int j = 0; j < y; j++)
 	{ //printf("row:%d, col:%d\nAidx:%f, Bidx:%f\n", row, col, A[idx(row,j,y)], B[idx(j,col,z)]);
 	  tval += A[idx(row,j,y)] * B[idx(j,col,z)];
-	  //swap j and col
 	}
       C[i] = tval;
     }
@@ -98,7 +101,7 @@ void MatMul (double *A, double *B, double *C, int x, int y, int z, int tcount)
   pthread_t ids[tcount];
   int tsplit[tcount];
   getSplit((x * z), tcount, tsplit);
-  for (int i = 0; i < tcount; i++) { //change 1 to tcount
+  for (int i = 0; i < tcount; i++) { 
     struct group *g = malloc(sizeof(struct group));
     g->threadn = i;
     g->A = A;
