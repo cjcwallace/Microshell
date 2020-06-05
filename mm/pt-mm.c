@@ -69,29 +69,22 @@ void * mul_thread (void *arg)
   /* start and end indices of completed matrix */
   int start = g->start;
   int end = start + g->n;
-  printf("~~~~~~~~~~~~~~~~~\nthreadn:%d, n:%d \nstart: %d, end:%d\n",g->threadn, g->n, start, end);
-  printf("A of start:%f\n", A[start]);
   
-  /*  ix: x of matrix 1
-   *  jx: y of matrix 2
-   *  kx: shared dimension 
-   *      x of matrix 2, y of matrix 1
-   */
-  int ix, jx, kx;
-  
-  for (ix = 0; ix < x; ix++) {
-    // Rows of solution
-    for (jx = 0; jx < z; jx++) {
-      // Columns of solution
+  // Goal: compute cells start -> end of solution matrix
+  for (int i = start; i < end; i++)
+    {
+      /* row of matA and col of matB */
+      int row = i/x;
+      int col = (i % z);
+      // multiply row A by col B
       float tval = 0;
-      // 0 and y
-      for (kx = start; kx < end; kx++) {
-	// Sum the A row time B column
-	tval += A[idx(ix,kx,y)] * B[idx(kx,jx,z)];
-      }
-      C[idx(ix,jx,z)] = tval;
+      for (int j = 0; j < y; j++)
+	{ //printf("row:%d, col:%d\nAidx:%f, Bidx:%f\n", row, col, A[idx(row,j,y)], B[idx(j,col,z)]);
+	  tval += A[idx(row,j,y)] * B[idx(j,col,z)];
+	  //swap j and col
+	}
+      C[i] = tval;
     }
-  }
   pthread_exit(NULL);
 }
 
@@ -105,7 +98,7 @@ void MatMul (double *A, double *B, double *C, int x, int y, int z, int tcount)
   pthread_t ids[tcount];
   int tsplit[tcount];
   getSplit((x * z), tcount, tsplit);
-  for (int i = 0; i < tcount; i++) {
+  for (int i = 0; i < tcount; i++) { //change 1 to tcount
     struct group *g = malloc(sizeof(struct group));
     g->threadn = i;
     g->A = A;
@@ -127,7 +120,6 @@ void MatMul (double *A, double *B, double *C, int x, int y, int z, int tcount)
 
 /* Matrix Square: 
  *  B = A ^ 2*times
- *
  *    A are not be modified.
  */
 
@@ -212,7 +204,7 @@ int main (int argc, char ** argv)
   int tcount = 8;
   //int t = 0;
   
-  while ((ch = getopt(argc, argv, "drs:x:y:z:")) != -1) {
+  while ((ch = getopt(argc, argv, "drs:x:y:z:n:")) != -1) {
     switch (ch) {
     case 'd':  /* debug */
       debug = 1;
@@ -280,7 +272,6 @@ int main (int argc, char ** argv)
     MatGen(A,x,y,useRand);
     MatGen(B,y,z,useRand);
     MatMul(A, B, C, x, y, z, tcount);
-    sleep(1);
     if (debug) {
       printf ("-------------- orignal A matrix ------------------\n");
       MatPrint(A,x,y);
