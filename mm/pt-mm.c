@@ -34,6 +34,9 @@ struct group {
   int n; /* number of comps */
   int start;
   int threadn;
+  int times;
+  double clock;
+  pthread_barrier_t *bar;
 };
 
 /* Returns list containing number of computations each thread computes
@@ -60,6 +63,17 @@ int getSplit(int x, int tcount, int *tsplit)
   return 0;
 }
 
+double wall_time() {
+  struct timeval tv;
+  if (gettimeofday(&tv, NULL)) return 0;
+  return (double) tv.tv_sec + (double) tv.tv_usec * 0.000001;
+}
+
+double cpu_time() {
+  return (double) clock() / CLOCKS_PER_SEC;
+}
+
+
 /* idx = (x)(col) + y */
 void * mul_thread (void *arg)
 {
@@ -67,28 +81,45 @@ void * mul_thread (void *arg)
   double *A = g->A;
   double *B = g->B;
   double *C = g->C;
-  int x = g->x;
-  int y = g->y;
-  int z = g->z;
+  int x = g->x, y = g->y, z = g->z;
   /* start and end indices of completed matrix */
   int start = g->start;
   int end = start + g->n;
-  
-  // Goal: compute cells start -> end of solution matrix
-  for (int i = start; i < end; i++)
+  int times = 0 + g->times;
+  pthread_barrier_t *bar = g->bar;
+  //printf("t:%d, s: %d, e: %d\n",g->threadn, start, end);
+  int count = 0;
+  double time1 = wall_time();
+  while (times > 0)
     {
-      /* row of matA and col of matB */
-      int row = i/x;
-      int col = (i % z);
-      /* multiply row A by col B */
-      float tval = 0;
-      for (int j = 0; j < y; j++)
-	{ //printf("row:%d, col:%d\nAidx:%f, Bidx:%f\n", row, col, A[idx(row,j,y)], B[idx(j,col,z)]);
-	  tval += A[idx(row,j,y)] * B[idx(j,col,z)];
+      count++;
+      /* Goal: compute cells start -> end of solution matrix */
+      for (int i = start; i < end; i++)
+	{
+	  /* row of matA and col of matB */
+	  int row = i/z;
+	  int col = (i % z);
+	  /* multiply row A by col B */
+	  double tval = 0;
+	  for (int j = 0; j < y; j++)
+	    { 
+	      tval += A[idx(row,j,y)] * B[idx(j,col,z)];
+	    } 
+	  C[i] = tval;
 	}
-      C[i] = tval;
+      times--;
+      if (times > 0)
+	{
+	  pthread_barrier_wait(bar);
+	  A = C;
+	  C = B;
+	  B = A;
+	}
     }
+  double time2 = wall_time();
+  printf("thread:%d, count:%d\n", g->threadn, count);
   pthread_exit(NULL);
+  
 }
 
 /* Matrix Multiply:
@@ -98,10 +129,11 @@ void * mul_thread (void *arg)
  */
 void MatMul (double *A, double *B, double *C, int x, int y, int z, int tcount)
 {
+  double *time;
   pthread_t ids[tcount];
   int tsplit[tcount];
   getSplit((x * z), tcount, tsplit);
-  for (int i = 0; i < tcount; i++) { 
+  for (int i = 0; i < tcount; i++) {
     struct group *g = malloc(sizeof(struct group));
     g->threadn = i;
     g->A = A;
@@ -110,15 +142,22 @@ void MatMul (double *A, double *B, double *C, int x, int y, int z, int tcount)
     g->x = x;
     g->y = y;
     g->z = z;
+    g->clock = &time;
     if ( i == 0 ) g->n = tsplit[i];
     else g->n = tsplit[i] - tsplit[i - 1];
     g->start = tsplit[i] - g->n;
+    g->times = 1;
     int err = pthread_create (&ids[i], NULL, mul_thread, (void *) g);
     if (err) {
       fprintf(stderr, "Can't create thread %d\n", i);
       exit(1);
     }
-  }  
+  }
+  void *retval;
+  for (int i = 0; i < tcount; i++)
+    {
+      pthread_join(ids[i], &retval);
+    }
 }
 
 /* Matrix Square: 
@@ -128,21 +167,39 @@ void MatMul (double *A, double *B, double *C, int x, int y, int z, int tcount)
 
 void MatSquare (double *A, double *B, int x, int times, int tcount)
 {
-  int i;
-
-  MatMul (A, A, B, x, x, x, tcount);
-  if (times > 1) {
-    /* Need a Temporary for the computation */
-    double *T = (double *)malloc(sizeof(double)*x*x);
-    for (i = 1; i < times; i+= 2) {
-      MatMul (B, B, T, x, x, x, tcount);
-      if (i == times - 1)
-	memcpy(B, T, sizeof(double)*x*x);
-      else
-	MatMul (T, T, B, x, x, x, tcount);
+  pthread_t ids[tcount];
+  int tsplit[tcount];
+  pthread_barrier_t bar;
+  pthread_barrier_init(&bar, NULL, tcount);
+  getSplit((x * x), tcount, tsplit);
+  
+  memcpy(B, A, sizeof(double) * (x*x));
+  double *T = (double *)malloc(sizeof(double)*x*x);
+  for (int i = 0; i < tcount; i++) {
+    struct group *g = malloc(sizeof(struct group));
+    g->threadn = i;
+    g->bar = &bar;
+    g->A = g->B = B; g->C = T;
+    g->x = g->y = g->z = x;
+    if ( i == 0 ) g->n = tsplit[i];
+    else g->n = tsplit[i] - tsplit[i - 1];
+    g->start = tsplit[i] - g->n;
+    g->times = times;
+    int err = pthread_create (&ids[i], NULL, mul_thread, (void *)g);  
+    if (err) {
+      fprintf(stderr, "Can't create thread %d\n", i);
+      exit(1);
     }
-    free(T);
-  }
+  }  
+  void *retval;
+  for (int i = 0; i < tcount; i++)
+    {
+      pthread_join(ids[i], &retval);
+    }
+  if (times%2)
+    {
+      memcpy(B, T, sizeof(double) * (x*x));
+    }
 }
 
 /* Print a matrix: */
@@ -205,9 +262,9 @@ int main (int argc, char ** argv)
   int useRand = 0;
   int sTimes = 0;
   int tcount = 8;
-  //int t = 0;
+  int t = 0;
   
-  while ((ch = getopt(argc, argv, "drs:x:y:z:n:")) != -1) {
+  while ((ch = getopt(argc, argv, "drTs:x:y:z:n:")) != -1) {
     switch (ch) {
     case 'd':  /* debug */
       debug = 1;
@@ -222,10 +279,10 @@ int main (int argc, char ** argv)
     case 's':  /* s times */
       sTimes = atoi(optarg);
       square = 1;
-      break;/*
+      break;
     case 'T':
       t = 1;
-      break;*/
+      break;
     case 'x':  /* x size */
       x = atoi(optarg);
       break;
@@ -256,17 +313,26 @@ int main (int argc, char ** argv)
   double *A;
   double *B;
   double *C;
+  
+  struct timeval tv;
+  time_t curtime;
 
   if (square) {
     A = (double *) malloc (sizeof(double) * x * x);
     B = (double *) malloc (sizeof(double) * x * x);
     MatGen(A,x,x,useRand);
+    if (t) {
+      
+    }
     MatSquare(A, B, x, sTimes, tcount);
     if (debug) {
       printf ("-------------- orignal matrix ------------------\n");
       MatPrint(A,x,x);
       printf ("--------------  result matrix ------------------\n");
       MatPrint(B,x,x);
+      if (t) {
+	printf("Elapsed time: %d\nCPU time:%d\n");
+      }
     }
   } else {
     A = (double *) malloc (sizeof(double) * x * y);
@@ -274,6 +340,9 @@ int main (int argc, char ** argv)
     C = (double *) malloc (sizeof(double) * x * z);
     MatGen(A,x,y,useRand);
     MatGen(B,y,z,useRand);
+    if (t) {
+      double time1 = wall_time(); 
+    }
     MatMul(A, B, C, x, y, z, tcount);
     if (debug) {
       printf ("-------------- orignal A matrix ------------------\n");
@@ -282,6 +351,10 @@ int main (int argc, char ** argv)
       MatPrint(B,y,z);
       printf ("--------------  result C matrix ------------------\n");
       MatPrint(C,x,z);
+      if (t) {
+	double time2 = wall_time();
+	printf("Elapsed time: %d\nCPU time:%d\n", (time2-time1), );
+      }
     }
   }
   return 0;
