@@ -15,6 +15,7 @@
 #include <string.h>
 #include <errno.h>
 #include <time.h>
+#include <sys/time.h>
 #include <pthread.h>
 
 /* idx macro calculates the correct 2-d based 1-d index
@@ -39,8 +40,12 @@ struct group {
   pthread_barrier_t *bar;
 };
 
+struct timehelp {
+  double time;
+};
+
 /* Returns list containing number of computations each thread computes
- * x <- (x * z), tcount <- number of threads used */
+ * x <- (x *e z), tcount <- number of threads used */
 int getSplit(int x, int tcount, int *tsplit)
 {
   int v = x / tcount;
@@ -69,7 +74,7 @@ double wall_time() {
   return (double) tv.tv_sec + (double) tv.tv_usec * 0.000001;
 }
 
-double cpu_time() {
+double CPU_time() {
   return (double) clock() / CLOCKS_PER_SEC;
 }
 
@@ -81,13 +86,13 @@ void * mul_thread (void *arg)
   double *A = g->A;
   double *B = g->B;
   double *C = g->C;
-  int x = g->x, y = g->y, z = g->z;
+  //int x = g->x;
+  int y = g->y, z = g->z;
   /* start and end indices of completed matrix */
   int start = g->start;
   int end = start + g->n;
   int times = 0 + g->times;
   pthread_barrier_t *bar = g->bar;
-  //printf("t:%d, s: %d, e: %d\n",g->threadn, start, end);
   int count = 0;
   double time1 = wall_time();
   while (times > 0)
@@ -117,6 +122,7 @@ void * mul_thread (void *arg)
 	}
     }
   double time2 = wall_time();
+  g->clock = time2 - time1;
   printf("thread:%d, count:%d\n", g->threadn, count);
   pthread_exit(NULL);
   
@@ -129,10 +135,12 @@ void * mul_thread (void *arg)
  */
 void MatMul (double *A, double *B, double *C, int x, int y, int z, int tcount)
 {
-  double *time;
+  //double *time;
   pthread_t ids[tcount];
   int tsplit[tcount];
   getSplit((x * z), tcount, tsplit);
+  //double totaltime = 0;
+  //struct timehelp *t = malloc(sizeof(struct timehelp));
   for (int i = 0; i < tcount; i++) {
     struct group *g = malloc(sizeof(struct group));
     g->threadn = i;
@@ -142,7 +150,7 @@ void MatMul (double *A, double *B, double *C, int x, int y, int z, int tcount)
     g->x = x;
     g->y = y;
     g->z = z;
-    g->clock = &time;
+    //    g->clock = &time;
     if ( i == 0 ) g->n = tsplit[i];
     else g->n = tsplit[i] - tsplit[i - 1];
     g->start = tsplit[i] - g->n;
@@ -152,6 +160,7 @@ void MatMul (double *A, double *B, double *C, int x, int y, int z, int tcount)
       fprintf(stderr, "Can't create thread %d\n", i);
       exit(1);
     }
+    //    totaltime += g->clock;
   }
   void *retval;
   for (int i = 0; i < tcount; i++)
@@ -175,6 +184,8 @@ void MatSquare (double *A, double *B, int x, int times, int tcount)
   
   memcpy(B, A, sizeof(double) * (x*x));
   double *T = (double *)malloc(sizeof(double)*x*x);
+  //  double time1 = wall;
+  // double totaltime = 0;
   for (int i = 0; i < tcount; i++) {
     struct group *g = malloc(sizeof(struct group));
     g->threadn = i;
@@ -190,6 +201,7 @@ void MatSquare (double *A, double *B, int x, int times, int tcount)
       fprintf(stderr, "Can't create thread %d\n", i);
       exit(1);
     }
+    //totaltime += g->clock;
   }  
   void *retval;
   for (int i = 0; i < tcount; i++)
@@ -200,6 +212,7 @@ void MatSquare (double *A, double *B, int x, int times, int tcount)
     {
       memcpy(B, T, sizeof(double) * (x*x));
     }
+  //return totaltime;
 }
 
 /* Print a matrix: */
@@ -280,7 +293,7 @@ int main (int argc, char ** argv)
       sTimes = atoi(optarg);
       square = 1;
       break;
-    case 'T':
+    case 'T': /* display time */
       t = 1;
       break;
     case 'x':  /* x size */
@@ -314,24 +327,25 @@ int main (int argc, char ** argv)
   double *B;
   double *C;
   
-  struct timeval tv;
-  time_t curtime;
+  //struct timeval tv;
+  //time_t curtime;
 
   if (square) {
     A = (double *) malloc (sizeof(double) * x * x);
     B = (double *) malloc (sizeof(double) * x * x);
     MatGen(A,x,x,useRand);
-    if (t) {
-      
-    }
+    double tc1 = CPU_time();
+    double tw1 = wall_time();
     MatSquare(A, B, x, sTimes, tcount);
+    double tc2 = CPU_time();
+    double tw2 = wall_time();
     if (debug) {
       printf ("-------------- orignal matrix ------------------\n");
       MatPrint(A,x,x);
       printf ("--------------  result matrix ------------------\n");
       MatPrint(B,x,x);
       if (t) {
-	printf("Elapsed time: %d\nCPU time:%d\n");
+	printf("Elapsed time: %f\nCPU time:%f\n", (tw2-tw1),(tc2-tc1));
       }
     }
   } else {
@@ -340,10 +354,11 @@ int main (int argc, char ** argv)
     C = (double *) malloc (sizeof(double) * x * z);
     MatGen(A,x,y,useRand);
     MatGen(B,y,z,useRand);
-    if (t) {
-      double time1 = wall_time(); 
-    }
+    double tc1 = CPU_time();
+    double tw1 = wall_time();
     MatMul(A, B, C, x, y, z, tcount);
+    double tc2 = CPU_time();
+    double tw2 = wall_time();
     if (debug) {
       printf ("-------------- orignal A matrix ------------------\n");
       MatPrint(A,x,y);
@@ -352,8 +367,7 @@ int main (int argc, char ** argv)
       printf ("--------------  result C matrix ------------------\n");
       MatPrint(C,x,z);
       if (t) {
-	double time2 = wall_time();
-	printf("Elapsed time: %d\nCPU time:%d\n", (time2-time1), );
+	printf("Elapsed time: %f\nCPU time:%f\n", (tw2-tw1), (tc2-tc1));
       }
     }
   }
