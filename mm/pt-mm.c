@@ -36,7 +36,6 @@ struct group {
   int start;
   int threadn;
   int times;
-  double clock;
   pthread_barrier_t *bar;
 };
 
@@ -86,7 +85,6 @@ void * mul_thread (void *arg)
   double *A = g->A;
   double *B = g->B;
   double *C = g->C;
-  //int x = g->x;
   int y = g->y, z = g->z;
   /* start and end indices of completed matrix */
   int start = g->start;
@@ -113,6 +111,7 @@ void * mul_thread (void *arg)
 	  C[i] = tval;
 	}
       times--;
+      /* swap matrices for multiple squares */
       if (times > 0)
 	{
 	  pthread_barrier_wait(bar);
@@ -121,9 +120,6 @@ void * mul_thread (void *arg)
 	  B = A;
 	}
     }
-  double time2 = wall_time();
-  g->clock = time2 - time1;
-  printf("thread:%d, count:%d\n", g->threadn, count);
   pthread_exit(NULL);
   
 }
@@ -135,12 +131,9 @@ void * mul_thread (void *arg)
  */
 void MatMul (double *A, double *B, double *C, int x, int y, int z, int tcount)
 {
-  //double *time;
   pthread_t ids[tcount];
   int tsplit[tcount];
   getSplit((x * z), tcount, tsplit);
-  //double totaltime = 0;
-  //struct timehelp *t = malloc(sizeof(struct timehelp));
   for (int i = 0; i < tcount; i++) {
     struct group *g = malloc(sizeof(struct group));
     g->threadn = i;
@@ -150,7 +143,6 @@ void MatMul (double *A, double *B, double *C, int x, int y, int z, int tcount)
     g->x = x;
     g->y = y;
     g->z = z;
-    //    g->clock = &time;
     if ( i == 0 ) g->n = tsplit[i];
     else g->n = tsplit[i] - tsplit[i - 1];
     g->start = tsplit[i] - g->n;
@@ -160,7 +152,6 @@ void MatMul (double *A, double *B, double *C, int x, int y, int z, int tcount)
       fprintf(stderr, "Can't create thread %d\n", i);
       exit(1);
     }
-    //    totaltime += g->clock;
   }
   void *retval;
   for (int i = 0; i < tcount; i++)
@@ -184,8 +175,6 @@ void MatSquare (double *A, double *B, int x, int times, int tcount)
   
   memcpy(B, A, sizeof(double) * (x*x));
   double *T = (double *)malloc(sizeof(double)*x*x);
-  //  double time1 = wall;
-  // double totaltime = 0;
   for (int i = 0; i < tcount; i++) {
     struct group *g = malloc(sizeof(struct group));
     g->threadn = i;
@@ -201,7 +190,6 @@ void MatSquare (double *A, double *B, int x, int times, int tcount)
       fprintf(stderr, "Can't create thread %d\n", i);
       exit(1);
     }
-    //totaltime += g->clock;
   }  
   void *retval;
   for (int i = 0; i < tcount; i++)
@@ -212,7 +200,6 @@ void MatSquare (double *A, double *B, int x, int times, int tcount)
     {
       memcpy(B, T, sizeof(double) * (x*x));
     }
-  //return totaltime;
 }
 
 /* Print a matrix: */
@@ -326,9 +313,6 @@ int main (int argc, char ** argv)
   double *A;
   double *B;
   double *C;
-  
-  //struct timeval tv;
-  //time_t curtime;
 
   if (square) {
     A = (double *) malloc (sizeof(double) * x * x);
@@ -344,9 +328,9 @@ int main (int argc, char ** argv)
       MatPrint(A,x,x);
       printf ("--------------  result matrix ------------------\n");
       MatPrint(B,x,x);
-      if (t) {
-	printf("Elapsed time: %f\nCPU time:%f\n", (tw2-tw1),(tc2-tc1));
-      }
+    }
+    if (t) {
+	printf("Elapsed time: %f\nCPU time: %f\n", (tw2-tw1),(tc2-tc1));
     }
   } else {
     A = (double *) malloc (sizeof(double) * x * y);
@@ -366,9 +350,9 @@ int main (int argc, char ** argv)
       MatPrint(B,y,z);
       printf ("--------------  result C matrix ------------------\n");
       MatPrint(C,x,z);
-      if (t) {
-	printf("Elapsed time: %f\nCPU time:%f\n", (tw2-tw1), (tc2-tc1));
-      }
+    }
+    if (t) {
+      printf("Elapsed time: %f\nCPU time: %f\n", (tw2-tw1), (tc2-tc1));
     }
   }
   return 0;
